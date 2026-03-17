@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import Image from 'next/image';
 import { Message } from '@/lib/types';
 import ImageUploader from './ImageUploader';
@@ -66,18 +66,46 @@ export default function Chat({ onGenerate, isGenerating, onImageUpload }: ChatPr
       return urls.map(url => ({ url, base64: '' }));
     } catch { return []; }
   });
-  const [rateLimitTimer,  setRateLimitTimer]  = useState<number | null>(null);
-  const [logoDecision,    setLogoDecision]    = useState<'yes' | 'no' | null>('no');
-  const [logoImage,       setLogoImage]       = useState<UploadedImage | null>(null);
-  const [pendingAutoMsgs, setPendingAutoMsgs] = useState<Message[] | null>(null);
-  const [showImageUploader, setShowImageUploader] = useState(false);
-  const [showLogoUploader,  setShowLogoUploader]  = useState(false);
+const [rateLimitTimer,  setRateLimitTimer]  = useState<number | null>(null);
+const [logoDecision,    setLogoDecision]    = useState<'yes' | 'no' | null>('no');
+const [logoImage,       setLogoImage]       = useState<UploadedImage | null>(null);
+const [pendingAutoMsgs, setPendingAutoMsgs] = useState<Message[] | null>(null);
+const [showImageUploader, setShowImageUploader] = useState(false);
+const [showLogoUploader,  setShowLogoUploader]  = useState(false);
+
+const isLogoStepSatisfied = logoDecision === 'no' || (logoDecision === 'yes' && Boolean(logoImage));
+
+const handleManualGenerate = useCallback(() => {
+  if (!isLogoStepSatisfied) return;
+  const sanitized = messages.filter(m => m.content !== '');
+  onGenerate(sanitized, uploadedImages.map(i => i.base64), logoImage?.base64 || null);
+}, [isLogoStepSatisfied, messages, uploadedImages, logoImage, onGenerate]);
+
+  useEffect(() => {
+    const handleOpenPhotos = () => {
+      setShowImageUploader(true);
+      setShowLogoUploader(false);
+    };
+    const handleOpenLogo = () => {
+      setShowLogoUploader(true);
+      setShowImageUploader(false);
+    };
+    const handleRequestGenerate = () => {
+      handleManualGenerate();
+    };
+    window.addEventListener('openChatPhotos', handleOpenPhotos);
+    window.addEventListener('openChatLogo', handleOpenLogo);
+    window.addEventListener('requestChatGenerate', handleRequestGenerate);
+    return () => {
+      window.removeEventListener('openChatPhotos', handleOpenPhotos);
+      window.removeEventListener('openChatLogo', handleOpenLogo);
+      window.removeEventListener('requestChatGenerate', handleRequestGenerate);
+    };
+  }, [handleManualGenerate]);
 
   const messagesEndRef  = useRef<HTMLDivElement>(null);
   const latestMessages  = useRef<Message[]>(messages);
   const abortRef        = useRef<AbortController | null>(null);
-
-  const isLogoStepSatisfied = logoDecision === 'no' || (logoDecision === 'yes' && Boolean(logoImage));
 
   // Keep ref in sync for use inside stream callbacks
   useEffect(() => { latestMessages.current = messages; }, [messages]);
@@ -275,12 +303,6 @@ export default function Chat({ onGenerate, isGenerating, onImageUpload }: ChatPr
     setLogoImage(null);
   };
 
-  const handleManualGenerate = () => {
-    if (!isLogoStepSatisfied) return;
-    const sanitized = messages.filter(m => m.content !== '');
-    onGenerate(sanitized, uploadedImages.map(i => i.base64), logoImage?.base64 || null);
-  };
-
   return (
     <div className="flex flex-col h-full bg-white border border-gray-200 rounded-lg shadow-sm">
       <div className="flex items-center justify-between px-4 py-2 border-b border-gray-100 bg-gray-50">
@@ -360,7 +382,7 @@ export default function Chat({ onGenerate, isGenerating, onImageUpload }: ChatPr
       )}
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+      <div className="chat-messages flex-1 overflow-y-auto p-4 space-y-4">
         {messages.map((m, i) => {
           const isLast         = i === messages.length - 1;
           const isStreaming     = isLast && m.role === 'assistant' && isLoading;
@@ -376,7 +398,7 @@ export default function Chat({ onGenerate, isGenerating, onImageUpload }: ChatPr
                   </div>
                 )}
                 <div
-                  className={`${
+                  className={`chat-bubble ${
                     isUser
                       ? 'bg-[#6366F1] text-white rounded-[18px_18px_4px_18px]'
                       : 'bg-[#1E1E1E] text-gray-100 border-l-2 border-[#6366F1] rounded-[18px_18px_18px_4px]'
@@ -387,13 +409,13 @@ export default function Chat({ onGenerate, isGenerating, onImageUpload }: ChatPr
                       {[0, 1, 2].map(j => (
                         <span
                           key={j}
-                          className="w-2 h-2 rounded-full bg-current animate-bounce"
+                          className="typing-dot w-2 h-2 rounded-full bg-current animate-bounce"
                           style={{ animationDelay: `${j * 0.15}s` }}
                         />
                       ))}
                     </div>
                   ) : (
-                    <p className="text-sm whitespace-pre-wrap">
+                    <p className="chat-bubble-text text-sm whitespace-pre-wrap">
                       {m.content}
                       {isStreaming && m.content !== '' && (
                         <span className="inline-block w-0.5 h-4 bg-gray-500 ml-0.5 animate-pulse align-middle" />
@@ -450,10 +472,10 @@ export default function Chat({ onGenerate, isGenerating, onImageUpload }: ChatPr
           </div>
         )}
 
-        <div className="flex space-x-2">
+        <div className="flex flex-col sm:flex-row gap-2">
           <input
             type="text"
-            className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+            className="chat-input flex-1 border border-gray-300 rounded-lg px-3 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
             placeholder="Escribe tus requerimientos..."
             value={input}
             onChange={(e) => setInput(e.target.value)}
@@ -463,20 +485,22 @@ export default function Chat({ onGenerate, isGenerating, onImageUpload }: ChatPr
           <button
             onClick={handleSend}
             disabled={isLoading || !input.trim() || isGenerating}
-            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors disabled:opacity-50 text-sm"
+            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-3 rounded-lg font-medium transition-colors disabled:opacity-50 text-sm"
           >
             Enviar
           </button>
         </div>
 
-        <button
-          onClick={handleManualGenerate}
-          disabled={isGenerating || messages.length < 2 || isLoading || !isLogoStepSatisfied}
-          className="w-full bg-[#6366F1] hover:bg-[#4F46E5] text-white font-semibold text-[15px] py-3 px-6 rounded-[10px] flex items-center justify-center gap-2 shadow-md transition disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          <span className="text-sm">✦</span>
-          {isGenerating ? 'Generando diseño...' : 'Generar mi Landing Page'}
-        </button>
+        <div className="hidden lg:flex">
+          <button
+            onClick={handleManualGenerate}
+            disabled={isGenerating || messages.length < 2 || isLoading || !isLogoStepSatisfied}
+            className="w-full bg-[#6366F1] hover:bg-[#4F46E5] text-white font-semibold text-[15px] py-3 px-6 rounded-[10px] flex items-center justify-center gap-2 shadow-md transition disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <span className="text-sm">✦</span>
+            {isGenerating ? 'Generando diseño...' : 'Generar mi web'}
+          </button>
+        </div>
       </div>
     </div>
   );

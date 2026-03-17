@@ -22,6 +22,8 @@ export default function BuilderPage() {
   const [isGenerating,      setIsGenerating]      = useState(false);
   const [chatKey,           setChatKey]           = useState(0);
   const [selectedTemplate,  setSelectedTemplate]  = useState<TemplateStyle | 'ai' | null>(null);
+  const [showPreviewMobile, setShowPreviewMobile] = useState(false);
+  const [toolbarOpen,       setToolbarOpen]       = useState(false);
   // Track uploaded image URLs for server-side cleanup
   const [uploadedUrls,      setUploadedUrls]      = useState<string[]>([]);
 
@@ -123,45 +125,55 @@ export default function BuilderPage() {
     : 'Seleccionar plantilla';
 
   return (
+    <>
     <div className="flex flex-col h-screen bg-slate-50 text-slate-900 font-sans">
-      <header className="bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between shadow-[0_2px_10px_-3px_rgba(6,81,237,0.1)] shrink-0 z-10">
-        <div className="flex items-center space-x-4">
+      <header className="bg-white border-b border-gray-200 px-4 sm:px-6 py-4 flex flex-col gap-4 md:flex-row md:items-center md:justify-between shadow-[0_2px_10px_-3px_rgba(6,81,237,0.1)] shrink-0 z-10">
+        <div className="flex flex-wrap items-center justify-center md:justify-start gap-2">
           <Link
             href="/"
             className="text-2xl font-black tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-teal-500 hover:opacity-80 transition-opacity"
           >
             MiNegocioDigital
           </Link>
-          <span className="text-gray-300 font-light text-2xl">|</span>
-          <h2 className="text-slate-600 font-semibold tracking-wide flex items-center gap-2">
+          <span className="text-gray-300 font-light text-2xl hidden sm:inline">|</span>
+          <h2 className="text-slate-600 font-semibold tracking-wide flex items-center gap-2 text-base sm:text-lg">
             <span className="w-2 h-2 rounded-full bg-emerald-500 inline-block animate-pulse" />
             Estudio de creación
           </h2>
         </div>
 
-        <div className="flex items-center gap-3">
-          <button
-            onClick={handleNewProject}
-            className="flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-800 border border-slate-200 hover:border-slate-400 px-3 py-1.5 rounded-lg transition-colors font-medium"
-          >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div className="hidden md:flex w-full md:w-auto flex-wrap gap-2 justify-center md:justify-end">
+            <button
+              onClick={handleNewProject}
+              className="flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-800 border border-slate-200 hover:border-slate-400 px-3 py-1.5 rounded-lg transition-colors font-medium w-full md:w-auto justify-center"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
             </svg>
             Nuevo proyecto
           </button>
-          <DownloadButton
-            html={html}
-            uploadedUrls={uploadedUrls}
-            onCleaned={() => setUploadedUrls([])}
-          />
-        </div>
+          <div className="w-full md:w-auto flex justify-center">
+            <DownloadButton
+              html={html}
+              uploadedUrls={uploadedUrls}
+              onCleaned={() => setUploadedUrls([])}
+            />
+          </div>
+          </div>
+        <button
+          type="button"
+          className="md:hidden bg-slate-900 text-white px-4 py-2 rounded-full shadow border border-white/10"
+          onClick={() => setToolbarOpen(true)}
+        >
+          ☰ Opciones
+        </button>
       </header>
 
       <main className="flex-1 overflow-hidden p-6 relative">
         <div className="absolute inset-0 bg-[#f8fafc] bg-[radial-gradient(#e2e8f0_1px,transparent_1px)] [background-size:16px_16px] pointer-events-none" />
         <div className="flex flex-col lg:flex-row h-full gap-5 relative z-10">
           {/* Left Panel: Chat */}
-          <div className="w-full lg:flex-[0.42] min-w-[320px] flex flex-col h-full shadow-lg rounded-xl bg-white/80 backdrop-blur-sm border border-white/60">
+          <div className="flex-1 w-full lg:flex-[0.42] min-w-[300px] flex flex-col h-full shadow-lg rounded-xl bg-white/80 backdrop-blur-sm border border-white/60">
             <div className="flex-1 min-h-0 overflow-hidden">
               <Chat
                 key={chatKey}
@@ -172,7 +184,7 @@ export default function BuilderPage() {
                 onTemplateChange={() => setSelectedTemplate(null)}
               />
             </div>
-            <div className="pro-card">
+          <div className="pro-card desktop-only">
               <div className="pro-card-copy">
                 <p className="pro-card-eyebrow">Servicio experto</p>
                 <p className="pro-card-title">💡 ¿Quieres un diseño 100% personalizado?</p>
@@ -183,10 +195,26 @@ export default function BuilderPage() {
                 Hablemos
               </a>
             </div>
+            <div className="lg:hidden mt-3 grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                className="inline-flex items-center justify-center w-full text-sm font-semibold text-white bg-slate-900 px-4 py-2.5 rounded-lg border border-white/10 shadow-sm"
+                onClick={() => setShowPreviewMobile(true)}
+              >
+                Visualizar
+              </button>
+              <button
+                type="button"
+                className="inline-flex items-center justify-center w-full text-sm font-semibold text-white bg-[#6366F1] px-4 py-2.5 rounded-lg shadow disabled:opacity-50"
+                onClick={() => window.dispatchEvent(new Event('requestChatGenerate'))}
+              >
+                Generar web
+              </button>
+            </div>
           </div>
 
           {/* Right Panel: Preview */}
-          <div className="w-full lg:flex-[0.58] flex flex-col h-full bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
+          <div className="hidden w-full lg:flex-[0.58] lg:flex flex-col h-full bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
             <div className="bg-slate-100 border-b border-gray-200 px-4 py-3 flex items-center shrink-0">
               <div className="flex space-x-2">
                 <div className="w-3.5 h-3.5 rounded-full bg-red-400 shadow-sm border border-red-500/20" />
@@ -206,7 +234,119 @@ export default function BuilderPage() {
             </div>
           </div>
         </div>
+        {showPreviewMobile && (
+          <div className="fixed inset-0 z-50 bg-black/70 lg:hidden flex items-center justify-center px-4 py-6">
+            <div className="relative w-full max-w-3xl h-[90vh] bg-white rounded-2xl shadow-2xl border border-gray-200 flex flex-col">
+              <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200">
+                <p className="text-sm font-semibold text-slate-700">Vista previa de tu landing</p>
+                <button
+                  type="button"
+                  onClick={() => setShowPreviewMobile(false)}
+                  className="text-sm font-semibold text-slate-500 hover:text-slate-800"
+                >
+                  Cerrar ✕
+                </button>
+              </div>
+              <div className="flex-1 overflow-hidden bg-white">
+                <PreviewFrame html={html} isGenerating={isGenerating} />
+              </div>
+            </div>
+          </div>
+        )}
+        {toolbarOpen && (
+          <>
+            <div className="fixed inset-0 bg-black/50 z-40 lg:hidden" onClick={() => setToolbarOpen(false)} />
+            <div className="mobile-toolbar-sheet fixed inset-x-0 top-0 z-50 lg:hidden">
+              <div className="w-12 h-1.5 bg-white/30 rounded-full mx-auto mb-5" />
+              <div className="flex flex-col gap-3">
+                <button
+                  onClick={() => { handleNewProject(); setToolbarOpen(false); }}
+                  className="w-full bg-white text-slate-900 font-semibold text-base px-4 py-3 rounded-xl"
+                >
+                  Nuevo proyecto
+                </button>
+                <div className="mobile-toolbar-download w-full">
+                  <DownloadButton
+                    html={html}
+                    uploadedUrls={uploadedUrls}
+                    onCleaned={() => setUploadedUrls([])}
+                  />
+                </div>
+                <button
+                  onClick={() => {
+                    if (typeof window !== 'undefined') window.dispatchEvent(new Event('openChatPhotos'));
+                    setToolbarOpen(false);
+                  }}
+                  className="w-full bg-white/10 border border-white/20 text-white font-semibold text-base px-4 py-3 rounded-xl"
+                >
+                  📷 Fotos
+                </button>
+                <button
+                  onClick={() => {
+                    if (typeof window !== 'undefined') window.dispatchEvent(new Event('openChatLogo'));
+                    setToolbarOpen(false);
+                  }}
+                  className="w-full bg-white/10 border border-white/20 text-white font-semibold text-base px-4 py-3 rounded-xl"
+                >
+                  🏷️ Logo
+                </button>
+                <a
+                  href={WS_URL}
+                  target="_blank"
+                  rel="noopener"
+                  className="w-full inline-flex items-center justify-center gap-2 bg-[#25D366] text-slate-900 font-semibold text-base px-4 py-3 rounded-xl"
+                >
+                  <WhatsAppIcon size={16} /> Nosotros diseñamos por ti
+                </a>
+                <button
+                  onClick={() => { setShowPreviewMobile(true); setToolbarOpen(false); }}
+                  className="w-full bg-indigo-500 text-white font-semibold text-base px-4 py-3 rounded-xl"
+                >
+                  Visualizar página
+                </button>
+                <button
+                  onClick={() => setToolbarOpen(false)}
+                  className="w-full text-white/70 text-sm mt-2"
+                >
+                  Cerrar
+                </button>
+              </div>
+            </div>
+          </>
+        )}
       </main>
     </div>
+    <style jsx global>{`
+      @media (max-width: 768px) {
+        .chat-messages { min-height: 55vh; }
+        .chat-bubble { padding: 14px 16px !important; }
+        .chat-bubble-text { font-size: 15px !important; line-height: 1.6 !important; }
+        .chat-input { font-size: 16px !important; height: 52px !important; }
+        .typing-dot { transform: scale(1.3); }
+        .mobile-toolbar-sheet {
+          background: #1a1a2e;
+          border-radius: 20px 20px 0 0;
+          padding: 24px 20px 28px;
+          box-shadow: 0 -8px 32px rgba(0,0,0,0.4);
+          transform: translateY(0);
+          transition: transform 0.35s cubic-bezier(0.4,0,0.2,1);
+        }
+        .desktop-only { display: none !important; }
+        .mobile-toolbar-download > div {
+          flex-direction: column;
+          width: 100%;
+          gap: 12px;
+        }
+        .mobile-toolbar-download .publish-btn,
+        .mobile-toolbar-download button:last-child {
+          width: 100%;
+          justify-content: center;
+          border-radius: 12px;
+          padding: 16px;
+          font-size: 16px;
+        }
+      }
+    `}</style>
+    </>
   );
 }
