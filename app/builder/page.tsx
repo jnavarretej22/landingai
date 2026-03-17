@@ -195,21 +195,33 @@ export default function BuilderPage() {
                 Hablemos
               </a>
             </div>
-            <div className="lg:hidden mt-3 grid grid-cols-2 gap-2">
-              <button
-                type="button"
-                className="inline-flex items-center justify-center w-full text-sm font-semibold text-white bg-slate-900 px-4 py-2.5 rounded-lg border border-white/10 shadow-sm"
-                onClick={() => setShowPreviewMobile(true)}
-              >
-                Visualizar
-              </button>
-              <button
-                type="button"
-                className="inline-flex items-center justify-center w-full text-sm font-semibold text-white bg-[#6366F1] px-4 py-2.5 rounded-lg shadow disabled:opacity-50"
-                onClick={() => window.dispatchEvent(new Event('requestChatGenerate'))}
-              >
-                Generar web
-              </button>
+            <div className="lg:hidden mt-3 space-y-2">
+              {isGenerating && (
+                <div className="flex items-center justify-center gap-2 text-sm font-medium text-indigo-600 animate-pulse py-2">
+                  <svg className="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                  </svg>
+                  Generando tu landing page...
+                </div>
+              )}
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  className="inline-flex items-center justify-center w-full text-sm font-semibold text-white bg-slate-900 px-4 py-2.5 rounded-lg border border-white/10 shadow-sm"
+                  onClick={() => setShowPreviewMobile(true)}
+                >
+                  Visualizar
+                </button>
+                <button
+                  type="button"
+                  className="inline-flex items-center justify-center w-full text-sm font-semibold text-white bg-[#6366F1] px-4 py-2.5 rounded-lg shadow disabled:opacity-50"
+                  onClick={() => window.dispatchEvent(new Event('requestChatGenerate'))}
+                  disabled={isGenerating}
+                >
+                  Generar web
+                </button>
+              </div>
             </div>
           </div>
 
