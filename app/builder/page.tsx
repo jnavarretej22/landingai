@@ -7,9 +7,14 @@ import DownloadButton from '@/components/DownloadButton';
 import TemplateSelector, { TemplateStyle } from '@/components/TemplateSelector';
 import { Message } from '@/lib/types';
 import Link from 'next/link';
+import { WhatsAppIcon } from '@/components/WhatsAppIcon';
 
-const STORAGE_HTML      = 'landingai_html';
-const STORAGE_TEMPLATE  = 'landingai_template';
+const WS_NUMBER = "5930939667369";
+const WS_MESSAGE = encodeURIComponent("Hola! Me interesa que diseñen mi página web profesional 🚀");
+const WS_URL = `https://wa.me/${WS_NUMBER}?text=${WS_MESSAGE}`;
+
+const STORAGE_HTML      = 'minegocio_html';
+const STORAGE_TEMPLATE  = 'minegocio_template';
 const CLEANUP_ENDPOINT  = '/api/upload/cleanup';
 
 export default function BuilderPage() {
@@ -95,7 +100,7 @@ export default function BuilderPage() {
   const handleNewProject = useCallback(() => {
     if (!confirm('¿Empezar un nuevo proyecto? Se perderá la conversación y el diseño actual.')) return;
     try {
-      [STORAGE_HTML, STORAGE_TEMPLATE, 'landingai_messages', 'landingai_image_urls']
+      ['minegocio_html', 'minegocio_template', 'minegocio_messages', 'minegocio_image_urls']
         .forEach(k => sessionStorage.removeItem(k));
     } catch { }
     setHtml('');
@@ -118,7 +123,7 @@ export default function BuilderPage() {
             href="/"
             className="text-2xl font-black tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-teal-500 hover:opacity-80 transition-opacity"
           >
-            LandingAI
+            MiNegocioDigital
           </Link>
           <span className="text-gray-300 font-light text-2xl">|</span>
           <h2 className="text-slate-600 font-semibold tracking-wide flex items-center gap-2">
@@ -168,6 +173,15 @@ export default function BuilderPage() {
         </div>
       </header>
 
+      {/* Floating Banner */}
+      <div className="pro-banner">
+        <span>¿Quieres algo más profesional?</span>
+        <a href={WS_URL} target="_blank" rel="noopener" className="pro-banner-btn">
+          <WhatsAppIcon size={14} />
+          Nosotros Diseñamos por Ti
+        </a>
+      </div>
+
       <main className="flex-1 overflow-hidden p-6 relative">
         <div className="absolute inset-0 bg-[#f8fafc] bg-[radial-gradient(#e2e8f0_1px,transparent_1px)] [background-size:16px_16px] pointer-events-none" />
         <div className="flex h-full gap-6 relative z-10">
@@ -179,6 +193,15 @@ export default function BuilderPage() {
               isGenerating={isGenerating}
               onImageUpload={(url) => setUploadedUrls(prev => [...prev, url])}
             />
+
+            {/* Professional Card below chat */}
+            <div className="pro-card">
+              <p>💡 ¿Quieres un diseño 100% personalizado?</p>
+              <a href={WS_URL} target="_blank" rel="noopener" className="pro-card-btn">
+                <WhatsAppIcon size={14} />
+                Contáctanos — Diseñamos por Ti
+              </a>
+            </div>
           </div>
 
           {/* Right Panel: Preview */}
@@ -194,7 +217,7 @@ export default function BuilderPage() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
                     d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                 </svg>
-                landingai.app/vista-previa
+                minegociodigital.app/vista-previa
               </div>
             </div>
             <div className="flex-1 overflow-hidden bg-white">

@@ -5,3 +5,119 @@
 html, body {
   height: 100%;
 }
+
+/* WhatsApp Global Styles */
+.ws-pro-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: #25D366;
+  border: 1.5px solid #25D366;
+  padding: 14px 32px;
+  border-radius: 50px;
+  font-size: 15px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.3s ease;
+  animation: wsGlow 2.5s ease-in-out infinite;
+}
+.ws-pro-btn:hover {
+  background: #25D366;
+  color: #fff;
+  transform: translateY(-2px);
+  box-shadow: 0 12px 32px rgba(37,211,102,0.35);
+}
+@keyframes wsGlow {
+  0%,100% { box-shadow: 0 0 0 rgba(37,211,102,0); }
+  50% { box-shadow: 0 0 20px rgba(37,211,102,0.3); }
+}
+
+.pro-banner {
+  width: 100%;
+  background: #0f172a;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 8px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.8);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+}
+.pro-banner-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: #25D366;
+  color: #fff;
+  border: none;
+  padding: 7px 18px;
+  border-radius: 50px;
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.25s;
+  white-space: nowrap;
+}
+.pro-banner-btn:hover {
+  background: #1da851;
+  transform: scale(1.04);
+}
+
+.pro-card {
+  margin: 12px 16px;
+  padding: 14px 18px;
+  background: white;
+  border: 1px solid rgba(148, 163, 184, 0.15);
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  box-shadow: 0 10px 25px -5px rgba(0,0,0,0.05);
+}
+.pro-card p {
+  font-size: 13px;
+  color: #64748b;
+  margin: 0;
+  font-weight: 500;
+}
+.pro-card-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: #25D366;
+  color: #fff;
+  padding: 8px 16px;
+  border-radius: 50px;
+  font-size: 12px;
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: all 0.25s;
+  flex-shrink: 0;
+}
+.pro-card-btn:hover { background: #1da851; }
+
+.publish-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: #25D366;
+  color: #fff;
+  border: none;
+  padding: 16px 28px;
+  border-radius: 50px;
+  font-size: 15px;
+  font-weight: 700;
+  text-decoration: none;
+  transition: all 0.3s ease;
+  box-shadow: 0 6px 24px rgba(37,211,102,0.4);
+}
+.publish-btn:hover {
+  background: #1da851;
+  transform: translateY(-3px);
+  box-shadow: 0 12px 36px rgba(37,211,102,0.5);
+}
+

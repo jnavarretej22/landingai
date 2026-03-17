@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useRef } from 'react';
+import { WhatsAppIcon } from './WhatsAppIcon';
 
 interface DownloadButtonProps {
   html: string;
@@ -8,17 +9,18 @@ interface DownloadButtonProps {
   onCleaned?: () => void;
 }
 
+const WS_NUMBER = "5930939667369";
+const WS_PUBLISH_MSG = encodeURIComponent(
+  "Hola! Ya diseñé mi página en MiNegocioDigital y quiero que me ayuden a publicarla en internet 🌐"
+);
+const WS_PUBLISH_URL = `https://wa.me/${WS_NUMBER}?text=${WS_PUBLISH_MSG}`;
+
 export default function DownloadButton({ html, uploadedUrls = [], onCleaned }: DownloadButtonProps) {
   const formRef = useRef<HTMLFormElement>(null);
 
   const handleDownload = async () => {
     if (!html || !formRef.current) return;
-
-    // Submit the hidden form — the server responds with Content-Disposition: attachment
-    // so the browser downloads the file with the correct name, no blob URLs needed.
     formRef.current.submit();
-
-    // Delete uploaded images from server after download (best-effort)
     if (uploadedUrls.length > 0) {
       try {
         await fetch('/api/upload/cleanup', {
@@ -27,26 +29,40 @@ export default function DownloadButton({ html, uploadedUrls = [], onCleaned }: D
           body:    JSON.stringify({ urls: uploadedUrls }),
         });
         onCleaned?.();
-      } catch { /* not critical */ }
+      } catch { }
     }
   };
 
+  const handlePublish = async () => {
+    // 1. Trigger the actual download logic
+    handleDownload();
+
+    // 2. Open WhatsApp with a more relevant message
+    const msg = encodeURIComponent(
+      "¡Hola! Ya diseñé mi página en MiNegocioDigital y quiero publicarla 🌐. Acabo de descargar el archivo HTML y estoy listo para enviarlo."
+    );
+    window.open(`https://wa.me/${WS_NUMBER}?text=${msg}`, '_blank');
+  };
+
   return (
-    <>
-      {/* Hidden form that POSTs the HTML to the server-side download route */}
-      <form
-        ref={formRef}
-        method="POST"
-        action="/api/download"
-        style={{ display: 'none' }}
-      >
+    <div className="flex items-center gap-3">
+      <form ref={formRef} method="POST" action="/api/download" style={{ display: 'none' }}>
         <textarea name="html" readOnly value={html} onChange={() => {}} />
       </form>
+
+      <button 
+        onClick={handlePublish} 
+        disabled={!html}
+        className="publish-btn"
+      >
+        <WhatsAppIcon size={18} />
+        Publicar Mi Sitio
+      </button>
 
       <button
         onClick={handleDownload}
         disabled={!html}
-        className={`px-4 py-2 font-semibold rounded-lg shadow-md transition-colors flex items-center gap-2
+        className={`px-4 py-2 h-[52px] font-semibold rounded-full shadow-md transition-colors flex items-center gap-2
           ${html
             ? 'bg-blue-600 text-white hover:bg-blue-700 cursor-pointer'
             : 'bg-gray-300 text-gray-500 cursor-not-allowed'
@@ -58,6 +74,6 @@ export default function DownloadButton({ html, uploadedUrls = [], onCleaned }: D
         </svg>
         Descargar HTML
       </button>
-    </>
+    </div>
   );
 }

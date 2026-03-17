@@ -4,8 +4,8 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Message } from '@/lib/types';
 import ImageUploader from './ImageUploader';
 
-const STORAGE_MESSAGES   = 'landingai_messages';
-const STORAGE_IMG_URLS   = 'landingai_image_urls';
+const STORAGE_MESSAGES   = 'minegocio_messages';
+const STORAGE_IMG_URLS   = 'minegocio_image_urls';
 
 interface UploadedImage {
   url: string;
@@ -42,7 +42,7 @@ const ERROR_MESSAGES: Record<string, string> = {
 
 export default function Chat({ onGenerate, isGenerating, onImageUpload }: ChatProps) {
   const INITIAL_MSG: Message[] = [
-    { role: 'assistant', content: '¡Hola! Soy tu asistente de diseño web. ¿Cuál es el nombre y el giro de tu negocio?' },
+    { role: 'assistant', content: '¡Hola! Soy el asistente de MiNegocioDigital. Voy a ayudarte a crear la página web de tu negocio. ¿Cuál es el nombre de tu negocio?' },
   ];
 
   const [messages, setMessages] = useState<Message[]>(() => {
@@ -190,9 +190,9 @@ export default function Chat({ onGenerate, isGenerating, onImageUpload }: ChatPr
         }
       }
 
-    } catch (err: any) {
-      if (err.name === 'AbortError') return; // cancelled intentionally
-      console.error('Chat fetch error:', err?.message);
+    } catch (err: unknown) {
+      if ((err as Error).name === 'AbortError') return; // cancelled intentionally
+      console.error('Chat fetch error:', (err as Error)?.message);
       setMessages(prev => {
         const updated = [...prev];
         updated[updated.length - 1] = { role: 'assistant', content: '❌ Error de red. Verifica tu conexión.' };

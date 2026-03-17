@@ -20,7 +20,7 @@ export async function POST(req: Request) {
   const { messages } = await req.json();
 
   const encoder = new TextEncoder();
-  const allMessages = [
+  const allMessages: Groq.Chat.ChatCompletionMessageParam[] = [
     { role: 'system', content: CHAT_SYSTEM_PROMPT },
     ...messages,
   ];
@@ -80,7 +80,7 @@ export async function POST(req: Request) {
             try {
               const groqStream = await groq.chat.completions.create({
                 model,
-                messages: allMessages as any,
+                messages: allMessages,
                 max_tokens: 1024,
                 temperature: 0.5,
                 stream: true,
@@ -105,8 +105,9 @@ export async function POST(req: Request) {
               succeeded = true;
               break;
 
-            } catch (err: any) {
-              if (err?.status === 429 || err?.message?.includes('rate')) {
+            } catch (err: unknown) {
+              const error = err as { status?: number; message?: string };
+              if (error?.status === 429 || error?.message?.includes('rate')) {
                 console.log(`⚠️ Groq ${model} rate-limited, trying next model...`);
                 continue;
               }
@@ -119,7 +120,8 @@ export async function POST(req: Request) {
           }
         }
 
-      } catch (error: any) {
+      } catch (err: unknown) {
+        const error = err as { status?: number; message?: string };
         const isRateLimit = error?.status === 429 || error?.message?.includes('rate') || error?.message?.includes('límite');
         console.error('Chat stream error:', error?.message);
         controller.enqueue(

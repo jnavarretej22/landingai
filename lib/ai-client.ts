@@ -20,7 +20,7 @@ function withTimeout<T>(promise: Promise<T>, ms: number, label: string): Promise
 // ── Ollama (30s timeout) ─────────────────────────────────
 async function callOllama(
   model: string,
-  messages: { role: string; content: string }[],
+  messages: Groq.Chat.ChatCompletionMessageParam[],
   maxTokens: number
 ): Promise<string> {
   const res = await withTimeout(
@@ -40,7 +40,7 @@ async function callOllama(
 // ── Groq (15s timeout, model fallback) ──────────────────
 async function callGroq(
   models: string[],
-  messages: { role: string; content: string }[],
+  messages: Groq.Chat.ChatCompletionMessageParam[],
   maxTokens: number
 ): Promise<string> {
   const groq = new Groq({ apiKey: GROQ_API_KEY });
@@ -50,7 +50,7 @@ async function callGroq(
       const res = await withTimeout(
         groq.chat.completions.create({
           model,
-          messages: messages as any,
+          messages: messages,
           max_tokens: maxTokens,
           temperature: 0.5,
         }),
@@ -59,8 +59,9 @@ async function callGroq(
       );
       console.log(`✅ Provider: groq/${model}`);
       return res.choices[0]?.message?.content || '';
-    } catch (err: any) {
-      if (err?.status === 429 || err?.message?.includes('rate')) {
+    } catch (err: unknown) {
+      const error = err as { status?: number; message?: string };
+      if (error?.status === 429 || error?.message?.includes('rate')) {
         console.log(`⚠️ ${model} rate-limited, trying next...`);
         continue;
       }
@@ -74,14 +75,15 @@ async function callGroq(
 async function callWithFallback(
   ollamaModel: string,
   groqModels: string[],
-  messages: { role: string; content: string }[],
+  messages: Groq.Chat.ChatCompletionMessageParam[],
   maxTokens: number
 ): Promise<string> {
   if (!USE_OLLAMA) {
     try {
       return await callGroq(groqModels, messages, maxTokens);
-    } catch (err: any) {
-      if (err.message === 'GROQ_EXHAUSTED') {
+    } catch (err: unknown) {
+      const error = err as Error;
+      if (error.message === 'GROQ_EXHAUSTED') {
         console.log('⚠️ Groq exhausted — falling back to Ollama');
         return await callOllama(ollamaModel, messages, maxTokens);
       }
@@ -93,13 +95,13 @@ async function callWithFallback(
 
 // ── Public API ───────────────────────────────────────────
 export async function callChatAI(
-  messages: { role: string; content: string }[]
+  messages: Groq.Chat.ChatCompletionMessageParam[]
 ): Promise<string> {
   return callWithFallback('llama3.2:3b', GROQ_CHAT_MODELS, messages, 1024);
 }
 
 export async function callGenerateAI(
-  messages: { role: string; content: string }[]
+  messages: Groq.Chat.ChatCompletionMessageParam[]
 ): Promise<string> {
   return callWithFallback('qwen2.5-coder:7b', GROQ_CODE_MODELS, messages, 2000);
 }

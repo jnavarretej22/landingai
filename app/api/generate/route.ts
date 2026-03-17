@@ -4,6 +4,77 @@ import { join } from 'path';
 import { callGenerateAI } from '@/lib/ai-client';
 import { extractBusinessInfo } from '@/lib/prompts';
 
+interface LandingPageData {
+  metaDescription?: string;
+  metaKeywords?: string;
+  name?: string;
+  logoP1?: string;
+  logoP2?: string;
+  businessTagline?: string;
+  displayFont?: string;
+  bodyFont?: string;
+  bg?: string;
+  surface?: string;
+  surface2?: string;
+  accent?: string;
+  accent2?: string;
+  textColor?: string;
+  mutedColor?: string;
+  navSolidBg?: string;
+  btnText?: string;
+  nav1?: string;
+  nav2?: string;
+  nav3?: string;
+  navCta?: string;
+  whatsapp?: string;
+  heroEyebrow?: string;
+  heroLine1?: string;
+  heroLine2?: string;
+  heroLine3?: string;
+  heroSubtitle?: string;
+  ctaPrimary?: string;
+  ctaSecondary?: string;
+  stat1num?: string;
+  stat1lbl?: string;
+  stat2num?: string;
+  stat2lbl?: string;
+  stat3num?: string;
+  stat3lbl?: string;
+  carouselTag?: string;
+  carouselTitle?: string;
+  productsTag?: string;
+  productsTitle?: string;
+  productsSub?: string;
+  aboutTag?: string;
+  aboutTitle?: string;
+  aboutText?: string;
+  aboutCta?: string;
+  aboutImage?: string;
+  businessInitials?: string;
+  ctaTitle?: string;
+  ctaSubtitle?: string;
+  footerLogoP2?: string;
+  footerLogoP1?: string;
+  footerDesc?: string;
+  templateStyle?: string;
+  slides?: { url?: string; alt?: string }[];
+  cards?: { icon?: string; title?: string; text?: string; price?: string }[];
+  testimonials?: { text?: string; initials?: string; name?: string; role?: string }[];
+}
+
+interface BusinessInfo {
+  name?: string;
+  industry?: string;
+  product?: string;
+  audience?: string;
+  differentiator?: string;
+  bgColor?: string;
+  accentColor?: string;
+  colors?: string;
+  whatsapp?: string;
+  tone?: string;
+}
+
 // ── Template cache (cargado una vez al iniciar) ──────────
 const PUBLIC = join(process.cwd(), 'public');
 
@@ -23,7 +94,7 @@ for (const [key, file] of Object.entries(TEMPLATES)) {
 }
 
 // ── Color helpers ────────────────────────────────────────
-function isLightColor(hex: string): boolean {
+function isLightColor(hex: string | undefined): boolean {
   if (!hex || !hex.startsWith('#') || hex.length < 7) return false;
   const r = parseInt(hex.slice(1, 3), 16);
   const g = parseInt(hex.slice(3, 5), 16);
@@ -47,7 +118,7 @@ function getDarkBgForIndustry(industry: string): string {
   return key ? DARK_PALETTES[key] : '#080808';
 }
 
-function lighten(hex: string, amount = 12): string {
+function lighten(hex: string | undefined, amount = 12): string {
   if (!hex || !hex.startsWith('#') || hex.length < 7) return '#111111';
   const r = Math.min(255, parseInt(hex.slice(1, 3), 16) + amount);
   const g = Math.min(255, parseInt(hex.slice(3, 5), 16) + amount);
@@ -56,7 +127,7 @@ function lighten(hex: string, amount = 12): string {
 }
 
 // ── Post-process: enforce color rules ───────────────────
-function postProcess(data: any, businessInfo: any): any {
+function postProcess(data: LandingPageData, businessInfo: BusinessInfo): LandingPageData {
   const wantsLight = /blanco|claro|crema|fondo claro|fondo blanco|fondo amarillo/i
     .test(`${businessInfo.bgColor || ''} ${businessInfo.colors || ''}`);
 
@@ -85,7 +156,7 @@ function postProcess(data: any, businessInfo: any): any {
     (businessInfo.name || 'XX').replace(/[^a-zA-Z]/g, '').substring(0, 2).toUpperCase() || 'XX';
 
   // Safety truncation for Hero giant text (limit to impact words)
-  const truncateWords = (str: any, max: number) => {
+  const truncateWords = (str: unknown, max: number): string => {
     if (typeof str !== 'string' || !str) return '';
     const words = str.split(/\s+/).filter(Boolean);
     if (words.length <= max) return str;
@@ -101,7 +172,7 @@ function postProcess(data: any, businessInfo: any): any {
 }
 
 // ── Fill template ────────────────────────────────────────
-function fillTemplate(template: string, data: Record<string, any>, images: string[] = []): string {
+function fillTemplate(template: string, data: LandingPageData, images: string[] = []): string {
   let html = template;
 
   const simple: Record<string, string> = {
@@ -204,7 +275,7 @@ function fillTemplate(template: string, data: Record<string, any>, images: strin
       `<img src="${images[0]}" alt="${data.name || ''}" style="width:100%;height:100%;object-fit:cover;">`
     );
   } else if (data.slides?.length) {
-    data.slides.forEach((slide: any, i: number) => {
+    data.slides.forEach((slide: { url?: string; alt?: string }, i: number) => {
       html = html.replaceAll(`{{SLIDE_${i + 1}_URL}}`, slide.url || '');
       html = html.replaceAll(`{{SLIDE_${i + 1}_ALT}}`, slide.alt || '');
     });
@@ -212,7 +283,7 @@ function fillTemplate(template: string, data: Record<string, any>, images: strin
 
   // Cards
   if (data.cards?.length) {
-    data.cards.forEach((card: any, i: number) => {
+    data.cards.forEach((card: { icon?: string; title?: string; text?: string; price?: string }, i: number) => {
       html = html.replaceAll(`{{CARD_${i + 1}_ICON}}`,  card.icon  || '');
       html = html.replaceAll(`{{CARD_${i + 1}_TITLE}}`, card.title || '');
       html = html.replaceAll(`{{CARD_${i + 1}_TEXT}}`,  card.text  || '');
@@ -222,7 +293,7 @@ function fillTemplate(template: string, data: Record<string, any>, images: strin
 
   // Testimonials
   if (data.testimonials?.length) {
-    data.testimonials.forEach((t: any, i: number) => {
+    data.testimonials.forEach((t: { text?: string; initials?: string; name?: string; role?: string }, i: number) => {
       html = html.replaceAll(`{{TESTI_${i + 1}_TEXT}}`,     t.text     || '');
       html = html.replaceAll(`{{TESTI_${i + 1}_INITIALS}}`, t.initials || '');
       html = html.replaceAll(`{{TESTI_${i + 1}_NAME}}`,     t.name     || '');
@@ -234,7 +305,7 @@ function fillTemplate(template: string, data: Record<string, any>, images: strin
 }
 
 // ── Generation prompt (compact, ~550 tokens) ─────────────
-function buildPrompt(businessInfo: any, hasImages: boolean): string {
+function buildPrompt(businessInfo: BusinessInfo, hasImages: boolean): string {
   return `Eres un experto en diseño web. Genera SOLO JSON válido para una landing page.
 
 NEGOCIO:
@@ -290,9 +361,9 @@ export async function POST(req: Request) {
     const { messages, images = [], forcedTemplate } = await req.json();
 
     // 1. Extract business info (one AI call for extraction)
-    let businessInfo: any;
+    let businessInfo: BusinessInfo;
     try {
-      businessInfo = await extractBusinessInfo(messages);
+      businessInfo = (await extractBusinessInfo(messages)) as BusinessInfo;
     } catch {
       businessInfo = {};
     }
@@ -304,8 +375,9 @@ export async function POST(req: Request) {
         { role: 'system', content: 'Eres un generador JSON para landing pages. Solo JSON puro, sin markdown.' },
         { role: 'user',   content: buildPrompt(businessInfo, images.length > 0) },
       ]);
-    } catch (err: any) {
-      console.error('Generate AI error:', err?.message);
+    } catch (err: unknown) {
+      const error = err as { message?: string };
+      console.error('Generate AI error:', error?.message);
       return NextResponse.json(
         { success: false, error: 'Servicio de IA no disponible. Intenta en un momento.', code: 'rate_limit' },
         { status: 503 }
@@ -314,9 +386,9 @@ export async function POST(req: Request) {
 
     // 3. Parse JSON
     const clean = rawText.replace(/```json/gi, '').replace(/```/g, '').trim();
-    let parsedData: any;
+    let parsedData: LandingPageData;
     try {
-      parsedData = JSON.parse(clean);
+      parsedData = JSON.parse(clean) as LandingPageData;
     } catch {
       console.error('JSON parse error. Raw:', clean.slice(0, 200));
       return NextResponse.json(
@@ -348,7 +420,8 @@ export async function POST(req: Request) {
     const html = fillTemplate(template, parsedData, images);
     return NextResponse.json({ html: html.trim(), success: true, templateUsed: styleToUse });
 
-  } catch (error: any) {
+  } catch (err: unknown) {
+    const error = err as { message?: string };
     console.error('Generate API error:', error?.message);
     return NextResponse.json(
       { success: false, error: 'Error inesperado. Por favor intenta de nuevo.', code: 'parse_error' },
