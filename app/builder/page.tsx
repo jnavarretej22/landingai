@@ -7,6 +7,7 @@ import DownloadButton from '@/components/DownloadButton';
 import TemplateSelector, { TemplateStyle } from '@/components/TemplateSelector';
 import { Message } from '@/lib/types';
 import Link from 'next/link';
+import { WhatsAppIcon } from '@/components/WhatsAppIcon';
 
 const WS_NUMBER = "5930939667369";
 const WS_MESSAGE = encodeURIComponent("Hola! Me interesa que diseñen mi página web profesional 🚀");
@@ -171,13 +172,16 @@ export default function BuilderPage() {
                 onTemplateChange={() => setSelectedTemplate(null)}
               />
             </div>
-            <div className="pt-3">
-              <div className="flex items-center justify-between px-4 py-2.5 rounded-lg border border-[rgba(37,211,102,0.15)] bg-[rgba(37,211,102,0.06)] text-[13px] text-white/60">
-                <span>¿Quieres algo más profesional?</span>
-                <a href={WS_URL} target="_blank" rel="noopener" className="text-[#25D366] font-semibold whitespace-nowrap">
-                  Hablemos →
-                </a>
+            <div className="pro-card">
+              <div className="pro-card-copy">
+                <p className="pro-card-eyebrow">Servicio experto</p>
+                <p className="pro-card-title">💡 ¿Quieres un diseño 100% personalizado?</p>
+                <p className="pro-card-sub">Nuestro equipo puede crear tu sitio completo, listo para publicar.</p>
               </div>
+              <a href={WS_URL} target="_blank" rel="noopener" className="pro-card-btn">
+                <WhatsAppIcon size={14} />
+                Hablemos
+              </a>
             </div>
           </div>
 
