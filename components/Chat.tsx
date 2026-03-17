@@ -67,7 +67,7 @@ export default function Chat({ onGenerate, isGenerating, onImageUpload }: ChatPr
     } catch { return []; }
   });
   const [rateLimitTimer,  setRateLimitTimer]  = useState<number | null>(null);
-  const [logoDecision,    setLogoDecision]    = useState<'yes' | 'no' | null>(null);
+  const [logoDecision,    setLogoDecision]    = useState<'yes' | 'no' | null>('no');
   const [logoImage,       setLogoImage]       = useState<UploadedImage | null>(null);
   const [pendingAutoMsgs, setPendingAutoMsgs] = useState<Message[] | null>(null);
   const [showImageUploader, setShowImageUploader] = useState(false);

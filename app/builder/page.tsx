@@ -159,9 +159,9 @@ export default function BuilderPage() {
 
       <main className="flex-1 overflow-hidden p-6 relative">
         <div className="absolute inset-0 bg-[#f8fafc] bg-[radial-gradient(#e2e8f0_1px,transparent_1px)] [background-size:16px_16px] pointer-events-none" />
-        <div className="flex h-full gap-5 relative z-10">
+        <div className="flex flex-col lg:flex-row h-full gap-5 relative z-10">
           {/* Left Panel: Chat */}
-          <div className="flex-[0.42] min-w-[360px] flex flex-col h-full shadow-lg rounded-xl bg-white/70 backdrop-blur-sm border border-white/60">
+          <div className="w-full lg:flex-[0.42] min-w-[320px] flex flex-col h-full shadow-lg rounded-xl bg-white/80 backdrop-blur-sm border border-white/60">
             <div className="flex-1 min-h-0 overflow-hidden">
               <Chat
                 key={chatKey}
@@ -186,7 +186,7 @@ export default function BuilderPage() {
           </div>
 
           {/* Right Panel: Preview */}
-          <div className="flex-[0.58] flex flex-col h-full bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
+          <div className="w-full lg:flex-[0.58] flex flex-col h-full bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
             <div className="bg-slate-100 border-b border-gray-200 px-4 py-3 flex items-center shrink-0">
               <div className="flex space-x-2">
                 <div className="w-3.5 h-3.5 rounded-full bg-red-400 shadow-sm border border-red-500/20" />

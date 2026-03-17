@@ -90,7 +90,7 @@ export default function TemplateSelector({ onSelect }: TemplateSelectorProps) {
   const handleSkip    = () => onSelect(null);
 
   return (
-    <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center px-6 py-12 relative overflow-hidden">
+    <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center px-4 sm:px-6 py-10 sm:py-12 relative overflow-hidden">
 
       {/* Background blobs */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
@@ -102,24 +102,24 @@ export default function TemplateSelector({ onSelect }: TemplateSelectorProps) {
       <div className="relative z-10 w-full max-w-5xl">
 
         {/* Header */}
-        <div className="text-center mb-12">
-          <div className="inline-flex items-center gap-2 bg-white/5 border border-white/10 rounded-full px-4 py-1.5 text-sm text-slate-400 font-medium mb-6">
+        <div className="text-center mb-10 sm:mb-12 px-2">
+          <div className="inline-flex items-center gap-2 bg-white/5 border border-white/10 rounded-full px-3 sm:px-4 py-1.5 text-xs sm:text-sm text-slate-400 font-medium mb-4 sm:mb-6">
             ✦ Paso 1 de 2
           </div>
-          <h1 className="text-5xl font-black text-white tracking-tight leading-none mb-4">
+          <h1 className="text-4xl sm:text-5xl font-black text-white tracking-tight leading-tight sm:leading-none mb-3 sm:mb-4">
             Elige tu estilo<br />
             <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-400 via-cyan-400 to-teal-400">
               visual
             </span>
           </h1>
-          <p className="text-slate-400 text-lg max-w-xl mx-auto">
+          <p className="text-slate-400 text-base sm:text-lg max-w-xl mx-auto">
             Selecciona la plantilla que mejor represente tu negocio.
             La IA puede ajustar colores y contenido automáticamente.
           </p>
         </div>
 
         {/* Template grid */}
-        <div className="grid grid-cols-3 gap-4 mb-10">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8 sm:mb-10">
           {TEMPLATES.map((t) => {
             const isSelected = selected === t.id;
             const isHovered  = hovered  === t.id;
@@ -217,10 +217,10 @@ export default function TemplateSelector({ onSelect }: TemplateSelectorProps) {
         </div>
 
         {/* Actions */}
-        <div className="flex items-center justify-center gap-4">
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4">
           <button
             onClick={handleSkip}
-            className="text-slate-500 hover:text-slate-300 text-sm font-medium transition-colors px-5 py-2.5 rounded-xl hover:bg-white/5"
+            className="text-slate-500 hover:text-slate-300 text-sm font-medium transition-colors px-5 py-2.5 rounded-xl hover:bg-white/5 w-full sm:w-auto"
           >
             Dejar que la IA decida →
           </button>
@@ -232,7 +232,7 @@ export default function TemplateSelector({ onSelect }: TemplateSelectorProps) {
               selected
                 ? 'bg-white text-slate-950 hover:scale-105 shadow-[0_0_30px_rgba(255,255,255,0.2)]'
                 : 'bg-white/10 text-slate-500 cursor-not-allowed'
-            }`}
+            } w-full sm:w-auto justify-center`}
           >
             Continuar con {selected ? TEMPLATES.find(t => t.id === selected)?.name : 'estilo'}
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
