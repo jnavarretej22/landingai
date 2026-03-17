@@ -337,46 +337,47 @@ export default function Chat({ onGenerate, isGenerating, onImageUpload }: ChatPr
 
       {/* Input area */}
       <div className="p-4 border-t border-gray-100 space-y-3 bg-gray-50 rounded-b-lg">
-        <div className="bg-white border border-gray-200 rounded-lg p-3 shadow-inner space-y-3">
-          <div className="flex items-start justify-between gap-2">
+        <div className="bg-white border border-gray-200 rounded-lg p-3 shadow-sm space-y-2">
+          <div className="flex items-center justify-between">
             <div>
-              <p className="text-[11px] uppercase tracking-wide text-gray-400 font-semibold">Identidad visual</p>
-              <p className="text-sm font-semibold text-gray-800">¿Deseas agregar un logo a tu página?</p>
-              <p className="text-[11px] text-gray-500">Lo mostraremos en el header para reforzar tu marca.</p>
+              <p className="text-xs font-semibold text-gray-600">Logo opcional</p>
+              <p className="text-[11px] text-gray-500">Añádelo al header si lo tienes a mano.</p>
             </div>
             {waitingLogoAnswer && (
-              <span className="text-[11px] font-semibold text-amber-600">Responde para continuar</span>
+              <span className="text-[11px] font-semibold text-amber-600">Responde →</span>
             )}
           </div>
-          <div className="flex gap-2">
+          <div className="grid grid-cols-2 gap-2">
             {(['yes', 'no'] as const).map(option => (
               <button
                 key={option}
                 type="button"
                 onClick={() => handleLogoChoice(option)}
-                className={`flex-1 px-3 py-2 rounded-lg border text-sm font-semibold transition-colors ${
+                className={`px-3 py-1.5 rounded-md border text-[12px] font-semibold transition ${
                   logoDecision === option
                     ? option === 'yes'
-                      ? 'bg-emerald-100 text-emerald-700 border-emerald-200'
-                      : 'bg-gray-200 text-gray-700 border-gray-300'
-                    : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300'
+                      ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                      : 'bg-gray-100 text-gray-600 border-gray-200'
+                    : 'bg-white text-gray-500 border-gray-200 hover:border-gray-300'
                 }`}
                 disabled={isGenerating}
               >
-                {option === 'yes' ? 'Sí, agregar logo' : 'No por ahora'}
+                {option === 'yes' ? 'Sí, tengo logo' : 'No necesito'}
               </button>
             ))}
           </div>
           {logoDecision === 'yes' && (
-            <LogoUploader
-              onUploadSuccess={handleLogoUpload}
-              onRemove={clearLogo}
-              preview={logoImage}
-              disabled={isGenerating || isLoading}
-            />
+            <div className="rounded-md border border-dashed border-emerald-200 bg-emerald-50/40 p-2">
+              <LogoUploader
+                onUploadSuccess={handleLogoUpload}
+                onRemove={clearLogo}
+                preview={logoImage}
+                disabled={isGenerating || isLoading}
+              />
+            </div>
           )}
           {logoDecision === 'no' && (
-            <p className="text-[11px] text-gray-500">Puedes activarlo más tarde si consigues el archivo.</p>
+            <p className="text-[10px] text-gray-400">Siempre podrás cambiar de opinión más adelante.</p>
           )}
         </div>
 

@@ -32,73 +32,58 @@ html, body {
   50% { box-shadow: 0 0 20px rgba(37,211,102,0.3); }
 }
 
-.pro-banner {
-  width: 100%;
-  background: #0f172a;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  padding: 8px 24px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 16px;
-  font-size: 13px;
-  color: rgba(255, 255, 255, 0.8);
-  box-shadow: 0 4px 20px rgba(0,0,0,0.2);
-}
-.pro-banner-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  background: #25D366;
-  color: #fff;
-  border: none;
-  padding: 7px 18px;
-  border-radius: 50px;
-  font-size: 13px;
-  font-weight: 600;
-  text-decoration: none;
-  transition: all 0.25s;
-  white-space: nowrap;
-}
-.pro-banner-btn:hover {
-  background: #1da851;
-  transform: scale(1.04);
-}
-
 .pro-card {
-  margin: 12px 16px;
-  padding: 14px 18px;
-  background: white;
-  border: 1px solid rgba(148, 163, 184, 0.15);
-  border-radius: 16px;
+  margin: 0 18px 18px;
+  padding: 18px 20px;
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+  border-radius: 18px;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  box-shadow: 0 10px 25px -5px rgba(0,0,0,0.05);
+  gap: 16px;
+  box-shadow: 0 18px 35px rgba(15, 23, 42, 0.25);
+  border: 1px solid rgba(148, 163, 184, 0.3);
 }
-.pro-card p {
-  font-size: 13px;
-  color: #64748b;
+.pro-card-copy {
+  flex: 1;
+}
+.pro-card-eyebrow {
+  font-size: 11px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: rgba(226, 232, 240, 0.7);
+  margin-bottom: 6px;
+}
+.pro-card-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: #f8fafc;
   margin: 0;
-  font-weight: 500;
+}
+.pro-card-sub {
+  font-size: 12px;
+  color: rgba(226, 232, 240, 0.8);
+  margin: 4px 0 0;
 }
 .pro-card-btn {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  background: #25D366;
-  color: #fff;
-  padding: 8px 16px;
-  border-radius: 50px;
+  background: #22c55e;
+  color: #0f172a;
+  padding: 9px 18px;
+  border-radius: 999px;
   font-size: 12px;
-  font-weight: 600;
+  font-weight: 700;
   text-decoration: none;
   white-space: nowrap;
   transition: all 0.25s;
   flex-shrink: 0;
+  border: none;
 }
-.pro-card-btn:hover { background: #1da851; }
+.pro-card-btn:hover {
+  background: #16a34a;
+  color: #fff;
+}
 
 .publish-btn {
   display: inline-flex;
@@ -120,4 +105,3 @@ html, body {
   transform: translateY(-3px);
   box-shadow: 0 12px 36px rgba(37,211,102,0.5);
 }
-

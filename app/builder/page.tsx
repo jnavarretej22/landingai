@@ -174,33 +174,30 @@ export default function BuilderPage() {
         </div>
       </header>
 
-      {/* Floating Banner */}
-      <div className="pro-banner">
-        <span>¿Quieres algo más profesional?</span>
-        <a href={WS_URL} target="_blank" rel="noopener" className="pro-banner-btn">
-          <WhatsAppIcon size={14} />
-          Nosotros Diseñamos por Ti
-        </a>
-      </div>
-
       <main className="flex-1 overflow-hidden p-6 relative">
         <div className="absolute inset-0 bg-[#f8fafc] bg-[radial-gradient(#e2e8f0_1px,transparent_1px)] [background-size:16px_16px] pointer-events-none" />
         <div className="flex h-full gap-6 relative z-10">
           {/* Left Panel: Chat */}
-          <div className="w-1/3 flex flex-col h-full shrink-0 shadow-lg rounded-xl overflow-hidden bg-white/50 backdrop-blur-sm border border-white/50">
-            <Chat
-              key={chatKey}
-              onGenerate={handleGenerate}
-              isGenerating={isGenerating}
-              onImageUpload={(url) => setUploadedUrls(prev => [...prev, url])}
-            />
+          <div className="w-1/3 flex flex-col h-full shrink-0 shadow-lg rounded-xl bg-white/50 backdrop-blur-sm border border-white/50">
+            <div className="flex-1 overflow-hidden">
+              <Chat
+                key={chatKey}
+                onGenerate={handleGenerate}
+                isGenerating={isGenerating}
+                onImageUpload={(url) => setUploadedUrls(prev => [...prev, url])}
+              />
+            </div>
 
             {/* Professional Card below chat */}
             <div className="pro-card">
-              <p>💡 ¿Quieres un diseño 100% personalizado?</p>
+              <div className="pro-card-copy">
+                <p className="pro-card-eyebrow">Servicio experto</p>
+                <p className="pro-card-title">💡 ¿Quieres un diseño 100% personalizado?</p>
+                <p className="pro-card-sub">Nuestro equipo puede crear tu sitio completo, listo para publicar.</p>
+              </div>
               <a href={WS_URL} target="_blank" rel="noopener" className="pro-card-btn">
                 <WhatsAppIcon size={14} />
-                Contáctanos — Diseñamos por Ti
+                Hablemos
               </a>
             </div>
           </div>
