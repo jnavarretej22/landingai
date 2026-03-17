@@ -11,6 +11,7 @@ const STORAGE_IMG_URLS   = 'minegocio_image_urls';
 interface UploadedImage {
   url: string;
   base64: string;
+  isEphemeral?: boolean;
 }
 
 interface ChatProps {
@@ -80,7 +81,9 @@ export default function Chat({ onGenerate, isGenerating, onImageUpload }: ChatPr
   // Persist uploaded image URLs (not base64) on every change
   useEffect(() => {
     try {
-      const urls = uploadedImages.map(i => i.url).filter(Boolean);
+      const urls = uploadedImages
+        .map(i => i.url)
+        .filter((url): url is string => Boolean(url) && url.startsWith('/uploads/'));
       sessionStorage.setItem(STORAGE_IMG_URLS, JSON.stringify(urls));
     } catch { }
   }, [uploadedImages]);
@@ -208,12 +211,17 @@ export default function Chat({ onGenerate, isGenerating, onImageUpload }: ChatPr
     sendMessage(input);
   };
 
-  const handleUploadSuccess = (url: string, base64: string) => {
-    setUploadedImages(prev => [...prev, { url, base64 }]);
-    onImageUpload?.(url); // notify parent so it can track for cleanup
+  const handleUploadSuccess = (url: string, base64: string, isEphemeral?: boolean) => {
+    setUploadedImages(prev => [...prev, { url, base64, isEphemeral }]);
+    const isPersistedFile = url.startsWith('/uploads/') && !isEphemeral;
+    if (isPersistedFile) {
+      onImageUpload?.(url); // only track URLs that exist on disk
+    }
     const msg: Message = {
       role:    'user',
-      content: `He subido una foto del negocio (disponible en ${url}). Úsala en el carrusel y sección "Nosotros".`,
+      content: isPersistedFile
+        ? `He subido una foto del negocio (disponible temporalmente en ${url}). Úsala en el carrusel y sección "Nosotros".`
+        : 'He subido una foto del negocio y se adjunta para el carrusel y la sección "Nosotros".',
     };
     setMessages(prev => [...prev, msg]);
   };
@@ -283,7 +291,14 @@ export default function Chat({ onGenerate, isGenerating, onImageUpload }: ChatPr
           <div className="flex flex-wrap gap-2">
             {uploadedImages.map((img, i) => (
               <div key={i} className="relative w-12 h-12 rounded border border-gray-300 overflow-hidden shadow-sm">
-                <Image src={img.url} alt={`Foto ${i + 1}`} width={48} height={48} className="w-full h-full object-cover" />
+                <Image
+                  src={img.url}
+                  alt={`Foto ${i + 1}`}
+                  width={48}
+                  height={48}
+                  className="w-full h-full object-cover"
+                  unoptimized
+                />
                 <div className="absolute top-0 right-0 bg-green-500 text-white text-[10px] w-4 h-4 flex items-center justify-center rounded-bl font-bold">✓</div>
               </div>
             ))}

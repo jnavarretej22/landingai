@@ -17,12 +17,13 @@ export default function DownloadButton({ html, uploadedUrls = [], onCleaned }: D
   const handleDownload = async () => {
     if (!html || !formRef.current) return;
     formRef.current.submit();
-    if (uploadedUrls.length > 0) {
+    const urlsToClean = uploadedUrls.filter(url => url.startsWith('/uploads/'));
+    if (urlsToClean.length > 0) {
       try {
         await fetch('/api/upload/cleanup', {
           method:  'POST',
           headers: { 'Content-Type': 'application/json' },
-          body:    JSON.stringify({ urls: uploadedUrls }),
+          body:    JSON.stringify({ urls: urlsToClean }),
         });
         onCleaned?.();
       } catch { }

@@ -3,7 +3,7 @@
 import React, { useState, useRef } from 'react';
 
 interface ImageUploaderProps {
-  onUploadSuccess: (url: string, base64: string) => void;
+  onUploadSuccess: (url: string, base64: string, isEphemeral?: boolean) => void;
 }
 
 /** Compress image client-side before uploading (max 800px, quality 0.8) */
@@ -59,7 +59,7 @@ export default function ImageUploader({ onUploadSuccess }: ImageUploaderProps) {
       const data = await res.json();
 
       if (res.ok && data.url && data.base64) {
-        onUploadSuccess(data.url, data.base64);
+        onUploadSuccess(data.url, data.base64, Boolean(data.isEphemeral));
       } else {
         setError(data.error || 'Error al subir la imagen.');
       }

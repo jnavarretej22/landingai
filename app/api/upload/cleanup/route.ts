@@ -18,6 +18,7 @@ export async function POST(req: Request) {
 
     let deleted = 0;
     for (const url of urls) {
+      if (typeof url !== 'string' || !url.startsWith('/uploads/')) continue;
       try {
         // url is like /uploads/timestamp-filename.jpg — strip query params & sanitize
         const filename = path.basename(url.split('?')[0]);
