@@ -123,18 +123,18 @@ export default function BuilderPage() {
     : 'Seleccionar plantilla';
 
   return (
-    <div className="flex flex-col h-screen bg-[#0F0F0F] text-white font-sans">
-      <header className="bg-[#0F0F0F] border-b border-white/10 px-6 py-4 flex items-center justify-between shadow-[0_10px_30px_rgba(0,0,0,0.35)] shrink-0 z-10">
+    <div className="flex flex-col h-screen bg-slate-50 text-slate-900 font-sans">
+      <header className="bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between shadow-[0_2px_10px_-3px_rgba(6,81,237,0.1)] shrink-0 z-10">
         <div className="flex items-center space-x-4">
           <Link
             href="/"
-            className="text-2xl font-black tracking-tight text-white"
+            className="text-2xl font-black tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-teal-500 hover:opacity-80 transition-opacity"
           >
             MiNegocioDigital
           </Link>
-          <span className="text-white/30 font-light text-2xl">|</span>
-          <h2 className="text-white/70 font-semibold tracking-wide flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-emerald-400 inline-block animate-pulse" />
+          <span className="text-gray-300 font-light text-2xl">|</span>
+          <h2 className="text-slate-600 font-semibold tracking-wide flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-emerald-500 inline-block animate-pulse" />
             Estudio de creación
           </h2>
         </div>
@@ -142,7 +142,7 @@ export default function BuilderPage() {
         <div className="flex items-center gap-3">
           <button
             onClick={handleNewProject}
-            className="flex items-center gap-1.5 text-sm text-white/70 hover:text-white border border-white/15 hover:border-white/40 px-3 py-1.5 rounded-lg transition-colors font-medium"
+            className="flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-800 border border-slate-200 hover:border-slate-400 px-3 py-1.5 rounded-lg transition-colors font-medium"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -158,10 +158,10 @@ export default function BuilderPage() {
       </header>
 
       <main className="flex-1 overflow-hidden p-6 relative">
-        <div className="absolute inset-0 bg-[radial-gradient(rgba(99,102,241,0.08)_1px,transparent_1px)] [background-size:18px_18px] pointer-events-none" />
+        <div className="absolute inset-0 bg-[#f8fafc] bg-[radial-gradient(#e2e8f0_1px,transparent_1px)] [background-size:16px_16px] pointer-events-none" />
         <div className="flex h-full gap-5 relative z-10">
           {/* Left Panel: Chat */}
-          <div className="flex-[0.42] min-w-[360px] flex flex-col h-full">
+          <div className="flex-[0.42] min-w-[360px] flex flex-col h-full shadow-lg rounded-xl bg-white/70 backdrop-blur-sm border border-white/60">
             <div className="flex-1 min-h-0 overflow-hidden">
               <Chat
                 key={chatKey}
