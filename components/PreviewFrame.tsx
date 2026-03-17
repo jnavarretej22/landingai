@@ -82,7 +82,7 @@ export default function PreviewFrame({ html, isGenerating }: PreviewFrameProps) 
             d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
         </svg>
         <p className="text-sm">Tu landing page aparecerá aquí</p>
-        <p className="text-xs text-gray-300">Completa el chat y haz clic en "Generar"</p>
+        <p className="text-xs text-gray-300">Completa el chat y haz clic en &quot;Generar&quot;</p>
       </div>
     );
   }

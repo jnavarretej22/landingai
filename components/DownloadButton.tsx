@@ -10,10 +10,6 @@ interface DownloadButtonProps {
 }
 
 const WS_NUMBER = "5930939667369";
-const WS_PUBLISH_MSG = encodeURIComponent(
-  "Hola! Ya diseñé mi página en MiNegocioDigital y quiero que me ayuden a publicarla en internet 🌐"
-);
-const WS_PUBLISH_URL = `https://wa.me/${WS_NUMBER}?text=${WS_PUBLISH_MSG}`;
 
 export default function DownloadButton({ html, uploadedUrls = [], onCleaned }: DownloadButtonProps) {
   const formRef = useRef<HTMLFormElement>(null);

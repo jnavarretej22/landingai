@@ -29,8 +29,9 @@ export async function POST(req: Request) {
     }
 
     return NextResponse.json({ success: true, deleted });
-  } catch (err: any) {
-    console.error('Cleanup error:', err?.message);
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : String(err);
+    console.error('Cleanup error:', message);
     return NextResponse.json({ success: false, deleted: 0 });
   }
 }

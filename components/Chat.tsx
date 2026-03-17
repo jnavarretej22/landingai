@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from 'react';
+import Image from 'next/image';
 import { Message } from '@/lib/types';
 import ImageUploader from './ImageUploader';
 
@@ -282,7 +283,7 @@ export default function Chat({ onGenerate, isGenerating, onImageUpload }: ChatPr
           <div className="flex flex-wrap gap-2">
             {uploadedImages.map((img, i) => (
               <div key={i} className="relative w-12 h-12 rounded border border-gray-300 overflow-hidden shadow-sm">
-                <img src={img.url} alt={`Foto ${i + 1}`} className="w-full h-full object-cover" />
+                <Image src={img.url} alt={`Foto ${i + 1}`} width={48} height={48} className="w-full h-full object-cover" />
                 <div className="absolute top-0 right-0 bg-green-500 text-white text-[10px] w-4 h-4 flex items-center justify-center rounded-bl font-bold">✓</div>
               </div>
             ))}
