@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="{{META_DESCRIPTION}}">
+  <title>{{BUSINESS_NAME}} — {{BUSINESS_TAGLINE}}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family={{DISPLAY_FONT}}:ital,wght@0,700;0,800;1,700&family={{BODY_FONT}}:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg:      {{BG_COLOR}};
+      --surface: {{SURFACE_COLOR}};
+      --accent:  {{ACCENT_COLOR}};
+      --accent2: {{ACCENT2_COLOR}};
+      --text:    {{TEXT_COLOR}};
+      --muted:   {{MUTED_COLOR}};
+      --btn-text:{{BTN_TEXT_COLOR}};
+      --font-d:  '{{DISPLAY_FONT}}', serif;
+      --font-b:  '{{BODY_FONT}}', sans-serif;
+      --ease:    cubic-bezier(0.4,0,0.2,1);
+      --line:    1px solid color-mix(in srgb, var(--text) 12%, transparent);
+    }
+    *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+    html { scroll-behavior:smooth; }
+    body { font-family:var(--font-b); background:var(--bg); color:var(--text); overflow-x:hidden; line-height:1.6; }
+    img { display:block; max-width:100%; }
+
+    /* ── NAVBAR editorial ── */
+    .nav { position:fixed; top:0; left:0; width:100%; z-index:1000; padding:0 64px; height:60px; display:flex; justify-content:space-between; align-items:center; background:var(--bg); border-bottom:var(--line); transition:background .4s; }
+    .nav-logo { font-family:var(--font-d); font-size:18px; font-weight:800; font-style:italic; letter-spacing:-.5px; color:var(--text); text-decoration:none; }
+    .nav-logo span { color:var(--accent); font-style:normal; }
+    .nav-links { display:flex; gap:40px; list-style:none; }
+    .nav-links a { color:var(--muted); text-decoration:none; font-size:13px; font-weight:400; letter-spacing:.5px; transition:color .25s; }
+    .nav-links a:hover { color:var(--text); }
+    .nav-cta { background:transparent; color:var(--text); border:1px solid var(--text); padding:8px 22px; font-size:12px; font-weight:500; cursor:pointer; transition:all .25s; font-family:var(--font-b); letter-spacing:.5px; }
+    .nav-cta:hover { background:var(--text); color:var(--bg); }
+
+    /* ── HERO editorial ── */
+    .hero { min-height:100vh; padding:60px 64px 80px; display:flex; flex-direction:column; justify-content:flex-end; border-bottom:var(--line); position:relative; overflow:hidden; }
+    .hero-bg-text { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); font-family:var(--font-d); font-size:clamp(140px,22vw,280px); font-weight:900; color:color-mix(in srgb, var(--text) 4%, transparent); white-space:nowrap; pointer-events:none; letter-spacing:-10px; line-height:1; }
+    .hero-top { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:auto; padding-top:40px; }
+    .hero-eyebrow { font-size:11px; font-weight:500; letter-spacing:3px; text-transform:uppercase; color:var(--accent); }
+    .hero-issue { font-size:11px; color:var(--muted); letter-spacing:1px; text-align:right; }
+    .hero-content { position:relative; z-index:1; }
+    .hero-title { font-family:var(--font-d); font-size:clamp(56px,9vw,128px); font-weight:800; font-style:italic; line-height:.9; letter-spacing:-4px; margin-bottom:48px; opacity:0; animation:fadeUp .8s var(--ease) .1s forwards; }
+    .hero-title .hl { color:var(--accent); font-style:normal; }
+    .hero-title .dim { color:var(--muted); }
+    .hero-meta { display:flex; align-items:flex-end; justify-content:space-between; gap:48px; opacity:0; animation:fadeUp .8s var(--ease) .3s forwards; }
+    .hero-sub { font-size:17px; color:var(--muted); font-weight:300; max-width:420px; line-height:1.7; }
+    .hero-right { display:flex; flex-direction:column; align-items:flex-end; gap:24px; }
+    .hero-stats { display:flex; gap:40px; }
+    .stat { text-align:right; }
+    .stat-n { font-family:var(--font-d); font-size:36px; font-weight:800; display:block; line-height:1; letter-spacing:-1px; }
+    .stat-l { font-size:11px; color:var(--muted); letter-spacing:1px; text-transform:uppercase; display:block; margin-top:4px; }
+    .hero-btns { display:flex; gap:12px; }
+    .btn-main { background:var(--accent); color:var(--btn-text); border:none; padding:14px 36px; font-size:13px; font-weight:600; cursor:pointer; transition:all .25s; text-decoration:none; display:inline-block; font-family:var(--font-b); letter-spacing:.3px; }
+    .btn-main:hover { filter:brightness(1.12); }
+    .btn-ghost { background:transparent; color:var(--text); border:1px solid var(--text); padding:14px 36px; font-size:13px; cursor:pointer; transition:all .25s; text-decoration:none; display:inline-block; font-family:var(--font-b); }
+    .btn-ghost:hover { background:var(--text); color:var(--bg); }
+
+    /* ── CARRUSEL editorial ── */
+    .carousel-section { padding:80px 0; border-bottom:var(--line); }
+    .carousel-header { padding:0 64px 48px; display:flex; justify-content:space-between; align-items:flex-end; border-bottom:var(--line); margin-bottom:48px; }
+    .carousel-inner { padding:0 64px; }
+    .carousel-track-wrap { overflow:hidden; }
+    .carousel-track { display:flex; transition:transform .55s var(--ease); }
+    .c-slide { flex:0 0 calc(33.333% - 16px); margin-right:24px; aspect-ratio:4/3; overflow:hidden; position:relative; }
+    .c-slide img { width:100%; height:100%; object-fit:cover; transition:transform .6s var(--ease); filter:saturate(90%); }
+    .c-slide:hover img { transform:scale(1.04); filter:saturate(110%); }
+    .c-slide-overlay { position:absolute; inset:0; background:linear-gradient(to top,rgba(0,0,0,.5),transparent 50%); opacity:0; transition:opacity .3s; }
+    .c-slide:hover .c-slide-overlay { opacity:1; }
+    .carousel-controls { display:flex; align-items:center; gap:12px; margin-top:32px; }
+    .c-btn { width:40px; height:40px; border:1px solid var(--line); background:transparent; color:var(--text); font-size:16px; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all .25s; }
+    .c-btn:hover { background:var(--accent); border-color:var(--accent); color:var(--btn-text); }
+    .c-dots { display:flex; gap:6px; }
+    .c-dot { width:6px; height:6px; border-radius:50%; background:var(--muted); cursor:pointer; transition:all .3s; border:none; opacity:.4; }
+    .c-dot.on { background:var(--accent); opacity:1; width:20px; border-radius:3px; }
+
+    /* ── SECCIÓN BASE editorial ── */
+    .section { padding:96px 64px; border-bottom:var(--line); }
+    .s-tag { font-size:11px; font-weight:500; letter-spacing:3px; text-transform:uppercase; color:var(--accent); display:block; margin-bottom:20px; }
+    .s-title { font-family:var(--font-d); font-size:clamp(36px,4.5vw,64px); font-weight:800; font-style:italic; line-height:1.0; letter-spacing:-2px; margin-bottom:20px; }
+    .s-sub { font-size:16px; color:var(--muted); max-width:480px; line-height:1.75; margin-bottom:64px; }
+
+    /* ── CARDS editorial ── */
+    .cards { display:grid; grid-template-columns:repeat(3,1fr); gap:1px; background:var(--line); border:var(--line); }
+    .card { background:var(--bg); padding:40px 32px; transition:background .3s; }
+    .card:hover { background:var(--surface); }
+    .card-icon { font-size:32px; margin-bottom:32px; display:block; }
+    .card-num { font-family:var(--font-d); font-size:48px; font-weight:800; font-style:italic; color:color-mix(in srgb, var(--accent) 25%, transparent); letter-spacing:-2px; display:block; margin-bottom:16px; line-height:1; }
+    .card-title { font-family:var(--font-d); font-size:20px; font-weight:700; font-style:italic; letter-spacing:-.5px; margin-bottom:12px; }
+    .card-text { color:var(--muted); font-size:14px; line-height:1.8; }
+    .card-price { font-family:var(--font-d); font-size:28px; font-weight:800; color:var(--accent); margin-top:16px; }
+
+    /* ── ABOUT editorial ── */
+    .about-grid { display:grid; grid-template-columns:1fr 1fr; gap:96px; align-items:center; }
+    .about-img { position:relative; aspect-ratio:3/4; overflow:hidden; }
+    .about-img img { width:100%; height:100%; object-fit:cover; filter:saturate(85%); }
+    .about-img::after { content:''; position:absolute; inset:0; background:linear-gradient(135deg,color-mix(in srgb,var(--accent) 15%,transparent),transparent 60%); }
+    .about-deco { width:100%; height:100%; min-height:480px; background:var(--surface); display:flex; align-items:center; justify-content:center; font-family:var(--font-d); font-size:120px; font-weight:900; font-style:italic; color:var(--accent); opacity:.12; letter-spacing:-6px; }
+    .about-badge { font-size:11px; font-weight:500; letter-spacing:3px; text-transform:uppercase; color:var(--accent); margin-bottom:24px; display:block; }
+    .about-title { font-family:var(--font-d); font-size:clamp(28px,3vw,46px); font-weight:800; font-style:italic; letter-spacing:-1.5px; line-height:1.1; margin-bottom:24px; }
+    .about-text { color:var(--muted); font-size:15px; line-height:1.9; margin-bottom:36px; }
+
+    /* ── TESTIMONIALES editorial ── */
+    .testi-wrap { overflow-x:auto; scroll-snap-type:x mandatory; padding-bottom:12px; scrollbar-width:none; }
+    .testi-wrap::-webkit-scrollbar { display:none; }
+    .testi-row { display:flex; gap:1px; width:max-content; background:var(--line); border:var(--line); }
+    .testi-card { flex:0 0 360px; scroll-snap-align:start; background:var(--bg); padding:40px 36px; transition:background .3s; }
+    .testi-card:hover { background:var(--surface); }
+    .testi-stars { color:var(--accent); font-size:13px; letter-spacing:4px; margin-bottom:20px; }
+    .testi-q { color:var(--text); font-size:15px; line-height:1.85; font-family:var(--font-d); font-style:italic; margin-bottom:28px; }
+    .testi-author { display:flex; align-items:center; gap:14px; border-top:var(--line); padding-top:20px; }
+    .testi-av { width:40px; height:40px; background:var(--accent); display:flex; align-items:center; justify-content:center; font-family:var(--font-d); font-weight:800; font-size:14px; color:var(--btn-text); flex-shrink:0; }
+    .testi-name { font-weight:600; font-size:13px; display:block; }
+    .testi-role { font-size:12px; color:var(--muted); }
+
+    /* ── CTA editorial ── */
+    .cta-wrap { padding:0 64px 96px; }
+    .cta-box { border:var(--line); padding:96px 80px; position:relative; overflow:hidden; }
+    .cta-box::before { content:'"'; position:absolute; font-family:var(--font-d); font-size:400px; font-style:italic; color:color-mix(in srgb,var(--accent) 6%,transparent); top:-80px; left:40px; line-height:1; pointer-events:none; }
+    .cta-title { font-family:var(--font-d); font-size:clamp(36px,5vw,68px); font-weight:800; font-style:italic; letter-spacing:-2.5px; line-height:1.0; margin-bottom:24px; position:relative; }
+    .cta-title span { color:var(--accent); }
+    .cta-sub { font-size:17px; color:var(--muted); margin-bottom:48px; position:relative; max-width:500px; }
+    .cta-btns { display:flex; gap:16px; flex-wrap:wrap; position:relative; }
+    .btn-filled { background:var(--accent); color:var(--btn-text); border:none; padding:16px 44px; font-size:14px; font-weight:600; cursor:pointer; transition:all .25s; text-decoration:none; display:inline-block; font-family:var(--font-b); }
+    .btn-filled:hover { filter:brightness(1.1); }
+    .btn-border { background:transparent; color:var(--text); border:1px solid var(--text); padding:16px 44px; font-size:14px; cursor:pointer; transition:all .25s; text-decoration:none; display:inline-block; font-family:var(--font-b); }
+    .btn-border:hover { background:var(--text); color:var(--bg); }
+
+    /* ── FOOTER editorial ── */
+    .footer { border-top:var(--line); padding:64px; }
+    .footer-grid { display:grid; grid-template-columns:2fr 1fr 1fr; gap:64px; margin-bottom:56px; }
+    .footer-brand { font-family:var(--font-d); font-size:28px; font-weight:800; font-style:italic; letter-spacing:-1px; margin-bottom:16px; }
+    .footer-brand span { color:var(--accent); }
+    .footer-desc { color:var(--muted); font-size:14px; line-height:1.8; max-width:260px; }
+    .footer-col h4 { font-size:11px; font-weight:500; letter-spacing:2.5px; text-transform:uppercase; color:var(--muted); margin-bottom:24px; }
+    .footer-links { list-style:none; display:flex; flex-direction:column; gap:12px; }
+    .footer-links a { color:color-mix(in srgb,var(--text) 50%,transparent); text-decoration:none; font-size:14px; transition:color .2s; }
+    .footer-links a:hover { color:var(--accent); }
+    .footer-bottom { border-top:var(--line); padding-top:28px; display:flex; justify-content:space-between; align-items:center; }
+    .footer-copy { color:var(--muted); font-size:13px; }
+    .footer-badge { font-size:12px; color:var(--muted); }
+
+    /* ── WHATSAPP ── */
+    .wa-float {
+      position:fixed;
+      bottom:28px;
+      right:28px;
+      z-index:99999;
+      width:62px;
+      height:62px;
+      border-radius:50%;
+      background:#25D366;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      box-shadow:0 6px 28px rgba(37,211,102,.5);
+      text-decoration:none;
+      transition:transform .3s var(--ease);
+      animation:waPulse 2.5s ease-in-out infinite;
+    }
+    .wa-float:hover { transform:scale(1.14) !important; animation:none; }
+    .wa-float svg { width:30px; height:30px; fill:#fff; display:block; }
+
+    .rv { opacity:0; transform:translateY(32px); transition:opacity .8s var(--ease), transform .8s var(--ease); }
+    .rv.on { opacity:1; transform:translateY(0); }
+    .rv.d1{transition-delay:.1s} .rv.d2{transition-delay:.2s} .rv.d3{transition-delay:.3s}
+
+    @keyframes fadeUp { from{opacity:0;transform:translateY(28px)} to{opacity:1;transform:translateY(0)} }
+    @keyframes waPulse { 0%,100%{box-shadow:0 6px 28px rgba(37,211,102,.5)} 50%{box-shadow:0 8px 48px rgba(37,211,102,.85)} }
+
+    @media (max-width:900px) {
+      .nav { padding:0 20px; }
+      .nav-links { display:none; }
+      .hero { padding:60px 20px 60px; }
+      .hero-meta { flex-direction:column; align-items:flex-start; }
+      .hero-right { align-items:flex-start; }
+      .hero-stats { gap:24px; }
+      .section { padding:72px 20px; }
+      .carousel-header { padding:0 20px 32px; flex-direction:column; align-items:flex-start; gap:16px; }
+      .carousel-inner { padding:0 20px; }
+      .c-slide { flex:0 0 calc(85% - 12px); }
+      .cards { grid-template-columns:1fr; gap:0; }
+      .about-grid { grid-template-columns:1fr; gap:48px; }
+      .cta-wrap { padding:0 20px 72px; }
+      .cta-box { padding:60px 28px; }
+      .footer { padding:48px 20px 28px; }
+      .footer-grid { grid-template-columns:1fr; gap:40px; }
+      .footer-bottom { flex-direction:column; gap:12px; }
+    }
+  </style>
+</head>
+<body>
+  <nav class="nav">
+    <a href="#" class="nav-logo">{{LOGO_P1}}<span>{{LOGO_P2}}</span></a>
+    <ul class="nav-links">
+      <li><a href="#productos">{{NAV_1}}</a></li>
+      <li><a href="#nosotros">{{NAV_2}}</a></li>
+      <li><a href="#galeria">{{NAV_3}}</a></li>
+      <li><a href="#contacto">Contacto</a></li>
+    </ul>
+    <button class="nav-cta" onclick="window.open('https://wa.me/{{WHATSAPP_NUMBER}}','_blank')">{{NAV_CTA}}</button>
+  </nav>
+
+  <section class="hero">
+    <div class="hero-bg-text">{{LOGO_P1}}{{LOGO_P2}}</div>
+    <div class="hero-top">
+      <span class="hero-eyebrow">{{HERO_EYEBROW}}</span>
+      <span class="hero-issue">{{STAT_3_NUM}} · {{STAT_3_LBL}}</span>
+    </div>
+    <div class="hero-content">
+      <h1 class="hero-title">{{HERO_LINE_1}}<br><span class="hl">{{HERO_LINE_2}}</span><br><span class="dim">{{HERO_LINE_3}}</span></h1>
+      <div class="hero-meta">
+        <p class="hero-sub">{{HERO_SUBTITLE}}</p>
+        <div class="hero-right">
+          <div class="hero-stats">
+            <div class="stat"><span class="stat-n">{{STAT_1_NUM}}</span><span class="stat-l">{{STAT_1_LBL}}</span></div>
+            <div class="stat"><span class="stat-n">{{STAT_2_NUM}}</span><span class="stat-l">{{STAT_2_LBL}}</span></div>
+          </div>
+          <div class="hero-btns">
+            <a href="https://wa.me/{{WHATSAPP_NUMBER}}" class="btn-main" target="_blank">{{CTA_PRIMARY}} →</a>
+            <a href="#productos" class="btn-ghost">{{CTA_SECONDARY}}</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="carousel-section" id="galeria">
+    <div class="carousel-header">
+      <div><span class="s-tag">{{CAROUSEL_TAG}}</span><h2 class="s-title" style="margin-bottom:0;font-size:clamp(28px,3vw,42px)">{{CAROUSEL_TITLE}}</h2></div>
+    </div>
+    <div class="carousel-inner">
+      <div class="carousel-track-wrap">
+        <div class="carousel-track" id="cTrack">
+          <div class="c-slide"><img src="{{SLIDE_1_URL}}" alt="{{SLIDE_1_ALT}}"><div class="c-slide-overlay"></div></div>
+          <div class="c-slide"><img src="{{SLIDE_2_URL}}" alt="{{SLIDE_2_ALT}}"><div class="c-slide-overlay"></div></div>
+          <div class="c-slide"><img src="{{SLIDE_3_URL}}" alt="{{SLIDE_3_ALT}}"><div class="c-slide-overlay"></div></div>
+          <div class="c-slide"><img src="{{SLIDE_4_URL}}" alt="{{SLIDE_4_ALT}}"><div class="c-slide-overlay"></div></div>
+          <div class="c-slide"><img src="{{SLIDE_5_URL}}" alt="{{SLIDE_5_ALT}}"><div class="c-slide-overlay"></div></div>
+        </div>
+      </div>
+      <div class="carousel-controls">
+        <button class="c-btn" id="cPrev">&#8592;</button>
+        <button class="c-btn" id="cNext">&#8594;</button>
+        <div class="c-dots" id="cDots"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="productos">
+    <span class="s-tag rv">{{PRODUCTS_TAG}}</span>
+    <h2 class="s-title rv">{{PRODUCTS_TITLE}}</h2>
+    <p class="s-sub rv">{{PRODUCTS_SUBTITLE}}</p>
+    <div class="cards">
+      <div class="card rv d1"><span class="card-num">01</span><span class="card-icon">{{CARD_1_ICON}}</span><div class="card-title">{{CARD_1_TITLE}}</div><p class="card-text">{{CARD_1_TEXT}}</p></div>
+      <div class="card rv d2"><span class="card-num">02</span><span class="card-icon">{{CARD_2_ICON}}</span><div class="card-title">{{CARD_2_TITLE}}</div><p class="card-text">{{CARD_2_TEXT}}</p></div>
+      <div class="card rv d3"><span class="card-num">03</span><span class="card-icon">{{CARD_3_ICON}}</span><div class="card-title">{{CARD_3_TITLE}}</div><p class="card-text">{{CARD_3_TEXT}}</p></div>
+    </div>
+  </section>
+
+  <section class="section" id="nosotros">
+    <div class="about-grid">
+      <div class="about-img rv"><div class="about-deco">{{BUSINESS_INITIALS}}</div></div>
+      <div>
+        <span class="about-badge rv">{{ABOUT_TAG}}</span>
+        <h2 class="about-title rv">{{ABOUT_TITLE}}</h2>
+        <p class="about-text rv">{{ABOUT_TEXT}}</p>
+        <a href="https://wa.me/{{WHATSAPP_NUMBER}}" class="btn-main rv" target="_blank">{{ABOUT_CTA}} →</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <span class="s-tag rv">Testimonios</span>
+    <h2 class="s-title rv">Lo que dicen<br>nuestros clientes</h2>
+    <div class="testi-wrap rv">
+      <div class="testi-row">
+        <div class="testi-card"><div class="testi-stars">★★★★★</div><p class="testi-q">"{{TESTI_1_TEXT}}"</p><div class="testi-author"><div class="testi-av">{{TESTI_1_INITIALS}}</div><div><span class="testi-name">{{TESTI_1_NAME}}</span><span class="testi-role">{{TESTI_1_ROLE}}</span></div></div></div>
+        <div class="testi-card"><div class="testi-stars">★★★★★</div><p class="testi-q">"{{TESTI_2_TEXT}}"</p><div class="testi-author"><div class="testi-av">{{TESTI_2_INITIALS}}</div><div><span class="testi-name">{{TESTI_2_NAME}}</span><span class="testi-role">{{TESTI_2_ROLE}}</span></div></div></div>
+        <div class="testi-card"><div class="testi-stars">★★★★★</div><p class="testi-q">"{{TESTI_3_TEXT}}"</p><div class="testi-author"><div class="testi-av">{{TESTI_3_INITIALS}}</div><div><span class="testi-name">{{TESTI_3_NAME}}</span><span class="testi-role">{{TESTI_3_ROLE}}</span></div></div></div>
+        <div class="testi-card"><div class="testi-stars">★★★★☆</div><p class="testi-q">"{{TESTI_4_TEXT}}"</p><div class="testi-author"><div class="testi-av">{{TESTI_4_INITIALS}}</div><div><span class="testi-name">{{TESTI_4_NAME}}</span><span class="testi-role">{{TESTI_4_ROLE}}</span></div></div></div>
+      </div>
+    </div>
+  </section>
+
+  <div class="cta-wrap" id="contacto">
+    <div class="cta-box">
+      <h2 class="cta-title">{{CTA_TITLE}} <span>→</span></h2>
+      <p class="cta-sub">{{CTA_SUBTITLE}}</p>
+      <div class="cta-btns">
+        <a href="https://wa.me/{{WHATSAPP_NUMBER}}" class="btn-filled" target="_blank">💬 Escribir por WhatsApp</a>
+        <a href="#nosotros" class="btn-border">Conocer más</a>
+      </div>
+    </div>
+  </div>
+
+  <footer class="footer">
+    <div class="footer-grid">
+      <div><div class="footer-brand">{{FOOTER_LOGO_P1}}<span>{{FOOTER_LOGO_P2}}</span></div><p class="footer-desc">{{FOOTER_DESC}}</p></div>
+      <div class="footer-col"><h4>Navegación</h4><ul class="footer-links"><li><a href="#">Inicio</a></li><li><a href="#productos">{{NAV_1}}</a></li><li><a href="#nosotros">{{NAV_2}}</a></li><li><a href="#contacto">Contacto</a></li></ul></div>
+      <div class="footer-col"><h4>Contacto</h4><ul class="footer-links"><li><a href="https://wa.me/{{WHATSAPP_NUMBER}}" target="_blank">WhatsApp</a></li></ul></div>
+    </div>
+    <div class="footer-bottom">
+      <span class="footer-copy">© 2025 {{BUSINESS_NAME}}. Todos los derechos reservados.</span>
+      <span class="footer-badge">Hecho con LandingAI ✦</span>
+    </div>
+  </footer>
+
+  <a class="wa-float" href="https://wa.me/{{WHATSAPP_NUMBER}}" target="_blank" rel="noopener" aria-label="WhatsApp">
+    <svg viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.126.556 4.123 1.526 5.855L.057 23.882l6.186-1.438A11.934 11.934 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.885 0-3.65-.518-5.16-1.418l-.36-.214-3.733.868.939-3.62-.236-.374A9.96 9.96 0 012 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/></svg>
+  </a>
+
+  <script>
+    const _ro=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting)e.target.classList.add('on');}),{threshold:.1});
+    document.querySelectorAll('.rv').forEach(el=>_ro.observe(el));
+    (function(){
+      const track=document.getElementById('cTrack'),dots=document.getElementById('cDots');
+      if(!track||!dots)return;
+      const slides=Array.from(track.querySelectorAll('.c-slide')),GAP=24;let cur=0;
+      const vis=()=>window.innerWidth<900?1:3,maxI=()=>Math.max(0,slides.length-vis());
+      function buildDots(){dots.innerHTML='';for(let i=0;i<=maxI();i++){const d=document.createElement('button');d.className='c-dot'+(i===0?' on':'');d.onclick=()=>go(i);dots.appendChild(d);}}
+      function go(n){cur=Math.max(0,Math.min(n,maxI()));const w=slides[0].getBoundingClientRect().width+GAP;track.style.transform=`translateX(-${cur*w}px)`;dots.querySelectorAll('.c-dot').forEach((d,i)=>d.classList.toggle('on',i===cur));}
+      document.getElementById('cPrev').onclick=()=>go(cur-1);
+      document.getElementById('cNext').onclick=()=>go(cur<maxI()?cur+1:0);
+      setInterval(()=>go(cur<maxI()?cur+1:0),4500);
+      let rt;window.addEventListener('resize',()=>{clearTimeout(rt);rt=setTimeout(()=>{buildDots();go(0);},200);},{passive:true});
+      buildDots();
+    })();
+  </script>
+</body>
+</html>

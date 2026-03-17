@@ -1,0 +1,777 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="{{META_DESCRIPTION}}">
+  <meta name="keywords" content="{{META_KEYWORDS}}">
+  <title>{{BUSINESS_NAME}} — {{BUSINESS_TAGLINE}}</title>
+
+  <!--
+  ╔══════════════════════════════════════════════════════════════════╗
+  ║  INSTRUCCIÓN PARA LA IA:                                        ║
+  ║  1. Reemplaza TODOS los {{PLACEHOLDERS}} con datos reales       ║
+  ║  2. NO cambies el CSS ni el JS — solo rellena los datos         ║
+  ║  3. El botón de WhatsApp es OBLIGATORIO — nunca lo elimines     ║
+  ║  4. --bg SIEMPRE oscuro, --text SIEMPRE #FFFFFF                 ║
+  ║  5. Si accent es claro → agrega --btn-text: #000 en :root       ║
+  ║                                                                  ║
+  ║  PALETAS COMPLETAS POR INDUSTRIA:                               ║
+  ║  Comida/Bebidas   → bg:#0A0800 surface:#141200 surface2:#1E1A00 ║
+  ║                     accent:#FF4D00 accent2:#FF8C42              ║
+  ║  Moda/Ropa        → bg:#080808 surface:#111111 surface2:#1A1A1A ║
+  ║                     accent:#C9A84C accent2:#E8C97A btn-text:#000║
+  ║  Salud/Belleza    → bg:#06100A surface:#0D1A10 surface2:#142018 ║
+  ║                     accent:#A8E6CF accent2:#56CFE1 btn-text:#000║
+  ║  Tecnología       → bg:#050510 surface:#0A0A1E surface2:#10102E ║
+  ║                     accent:#00D4FF accent2:#7B6CF6 btn-text:#000║
+  ║  Servicios Prof.  → bg:#08080F surface:#101020 surface2:#181830 ║
+  ║                     accent:#7B6CF6 accent2:#A89CF7              ║
+  ║  Artesanías/Spa   → bg:#0F0A07 surface:#1A1008 surface2:#251810 ║
+  ║                     accent:#D4956A accent2:#E8B99A btn-text:#000║
+  ║  Fitness/Deporte  → bg:#060606 surface:#0F0F0F surface2:#181818 ║
+  ║                     accent:#39FF14 accent2:#00E5FF btn-text:#000║
+  ║  Restaurante      → bg:#0A0700 surface:#141000 surface2:#1E1800 ║
+  ║                     accent:#FFD166 accent2:#EF8C38 btn-text:#000║
+  ║  Blanco+Amarillo  → bg:#0A0800 surface:#141200 surface2:#1E1A00 ║
+  ║                     accent:#FFD700 accent2:#FF8C00 btn-text:#000║
+  ╚══════════════════════════════════════════════════════════════════╝
+  -->
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <!--
+  FUENTES SUGERIDAS (elige el par más adecuado al tono):
+  Lujoso/Premium  → Cormorant+Garamond:wght@600;700&family=DM+Sans
+  Moderno/Bold    → Syne:wght@700;800;900&family=DM+Sans
+  Editorial       → Fraunces:wght@700;800&family=Outfit
+  Artesanal/Cálido→ Playfair+Display:wght@700;800&family=Lato
+  Urbano/Juvenil  → Bebas+Neue&family=Inter  (Bebas solo display)
+  -->
+  <link href="https://fonts.googleapis.com/css2?family={{DISPLAY_FONT}}:wght@700;800;900&family={{BODY_FONT}}:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+
+  <style>
+    /* ═══════════════════════════════════
+       TOKENS — Personalizar por negocio
+    ═══════════════════════════════════ */
+    /*
+    ══════════════════════════════════════════════════════
+    REGLA DE COLOR — PRIORIDAD MÁXIMA:
+    Si el cliente especificó colores para el FONDO → respétalos exactamente.
+    Si no especificó → usar fondo oscuro por defecto.
+
+    FONDOS OSCUROS (por defecto):
+    bg:#0A0800 surface:#141200  → para comida/restaurante
+    bg:#080808 surface:#111111  → para moda/general
+    bg:#050510 surface:#0A0A1E  → para tecnología
+
+    FONDOS CLAROS (si el cliente los pidió):
+    Fondo blanco+amarillo: bg:#FFFDF0 surface:#FFFFFF surface2:#FFF8D6
+                           accent:#F5C400 accent2:#E8A000
+                           text:#1A1A1A muted:rgba(0,0,0,0.5) btn-text:#FFFFFF
+    Fondo blanco puro:     bg:#FFFFFF surface:#F8F8F8 surface2:#F0F0F0
+                           accent:#333333 text:#111111 muted:rgba(0,0,0,0.5)
+    Fondo crema+naranja:   bg:#FFF8F0 surface:#FFFFFF surface2:#FFF0E0
+                           accent:#FF6B00 text:#1A1A1A muted:rgba(0,0,0,0.5)
+
+    CUANDO EL FONDO ES CLARO — reglas obligatorias:
+    → --text: #1A1A1A (oscuro, nunca #FFFFFF)
+    → --muted: rgba(0,0,0,0.5) (nunca rgba(255,255,255,...))
+    → .nav.solid: background: rgba(255,255,255,0.95) (no rgba negro)
+    → .footer: background: #1A1A1A (siempre oscuro para contraste)
+    → .cta-box: mantener gradiente del accent (funciona en ambos modos)
+
+    Si --accent es claro (amarillo, blanco, crema, celeste):
+    → Los botones con ese fondo DEBEN tener color:#000 (no #fff)
+    → Aplica a: .nav-cta, .btn-main
+
+    Unsplash URLs — FORMATO OBLIGATORIO (source.unsplash.com está MUERTO):
+    ✅ https://images.unsplash.com/photo-{ID}?w=800&q=80
+    ❌ https://source.unsplash.com/1600x900/?keyword  ← NO FUNCIONA
+
+    IDs reales por industria:
+    Comida/alitas:  567620832903-9fc6debc209f / 630431341973-02e1b662ec35 / 1565050
+    Papas/snacks:   1541592106381-b31e9677c0e5 / 1562967914-608f82629710
+    Moda/ropa:      1536619 / 1445341 / 1620328
+    Belleza/spa:    1570129 / 1552058 / 1571938
+    Fitness:        1534438 / 1552252 / 1605296
+    Tecnología:     1714208 / 1518770 / 1562408
+    Restaurante:    1565050 / 1600891964092 / 1414235
+    ══════════════════════════════════════════════════════
+    */
+    :root {
+      --bg:      {{BG_COLOR}};        /* OSCURO siempre — ej: #0A0800 */
+      --surface: {{SURFACE_COLOR}};   /* OSCURO — ej: #141200 */
+      --surface2:{{SURFACE2_COLOR}};  /* OSCURO — ej: #1E1A00 */
+      --accent:  {{ACCENT_COLOR}};    /* color de marca — puede ser claro */
+      --accent2: {{ACCENT2_COLOR}};   /* variante del acento */
+      --text:    {{TEXT_COLOR}};      /* #FFFFFF si fondo oscuro, #1A1A1A si fondo claro */
+      --muted:   {{MUTED_COLOR}};     /* rgba(255,255,255,0.5) o rgba(0,0,0,0.5) */
+      --nav-solid-bg: {{NAV_SOLID_BG}}; /* rgba(5,5,5,0.92) oscuro | rgba(255,255,255,0.95) claro */
+      --font-d:  '{{DISPLAY_FONT}}', serif;
+      --font-b:  '{{BODY_FONT}}', sans-serif;
+      --radius:  20px;
+      --ease:    cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+    html { scroll-behavior:smooth; }
+    body { font-family:var(--font-b); background:var(--bg); color:var(--text); overflow-x:hidden; line-height:1.6; }
+    img  { display:block; max-width:100%; }
+
+    /* ═══════════════════════════════════
+       NAVBAR
+    ═══════════════════════════════════ */
+    .nav {
+      position:fixed; top:0; left:0; width:100%; z-index:1000;
+      padding:24px 56px;
+      display:flex; justify-content:space-between; align-items:center;
+      transition:padding .4s var(--ease), background .4s var(--ease);
+    }
+    .nav.solid {
+      background:var(--nav-solid-bg);
+      backdrop-filter:blur(24px);
+      padding:14px 56px;
+      border-bottom:1px solid rgba(255,255,255,0.06);
+    }
+    .nav-logo {
+      font-family:var(--font-d);
+      font-size:22px; font-weight:900; letter-spacing:-0.5px;
+      color:var(--text); text-decoration:none; z-index:1;
+    }
+    .nav-logo span { color:var(--accent); }
+    .nav-links { display:flex; gap:36px; list-style:none; }
+    .nav-links a {
+      color:var(--muted); text-decoration:none;
+      font-size:14px; font-weight:500; letter-spacing:.3px;
+      transition:color .25s;
+    }
+    .nav-links a:hover { color:var(--text); }
+    .nav-cta {
+      background:var(--accent); color:var(--btn-text, #fff); border:none;
+      padding:10px 26px; border-radius:50px;
+      font-size:13px; font-weight:600; cursor:pointer;
+      transition:all .3s var(--ease); font-family:var(--font-b);
+    }
+    .nav-cta:hover { filter:brightness(1.15); transform:scale(1.04); }
+    /*
+    IA: Si --accent es claro (amarillo, blanco, dorado, crema, celeste)
+    agrega esto en :root →  --btn-text: #000;
+    Si --accent es oscuro (rojo, azul oscuro, verde oscuro) deja #fff
+    */
+
+    /* ═══════════════════════════════════
+       HERO
+    ═══════════════════════════════════ */
+    .hero {
+      min-height:100vh;
+      display:flex; flex-direction:column;
+      justify-content:center; align-items:center;
+      text-align:center; padding:140px 48px 100px;
+      position:relative; overflow:hidden;
+    }
+    .blob {
+      position:absolute; border-radius:50%;
+      filter:blur(130px); pointer-events:none;
+      animation:float 10s ease-in-out infinite;
+    }
+    .blob-1 { width:650px; height:650px; background:var(--accent); opacity:.1; top:-180px; right:-180px; }
+    .blob-2 { width:450px; height:450px; background:var(--accent2); opacity:.08; bottom:-80px; left:-120px; animation-duration:13s; animation-direction:reverse; }
+
+    .hero-eyebrow {
+      display:inline-flex; align-items:center; gap:8px;
+      font-size:11px; font-weight:600; letter-spacing:3px; text-transform:uppercase;
+      color:var(--accent);
+      background:color-mix(in srgb, var(--accent) 12%, transparent);
+      border:1px solid color-mix(in srgb, var(--accent) 28%, transparent);
+      padding:7px 20px; border-radius:50px; margin-bottom:36px;
+      position:relative; z-index:1;
+      opacity:0; animation:fadeUp .7s var(--ease) .1s forwards;
+    }
+    .hero-eyebrow::before { content:'✦'; font-size:9px; }
+
+    .hero-title {
+      font-family:var(--font-d);
+      font-size:clamp(56px, 9vw, 112px);
+      font-weight:900; line-height:.93; letter-spacing:-4px;
+      margin-bottom:28px; position:relative; z-index:1;
+      opacity:0; animation:fadeUp .7s var(--ease) .2s forwards;
+    }
+    /* IA: usa .hl para la palabra más impactante del título */
+    .hero-title .hl  { color:var(--accent); }
+    /* IA: usa .dim para una línea secundaria más suave */
+    .hero-title .dim { color:var(--muted); font-weight:700; }
+
+    .hero-sub {
+      font-size:clamp(15px,1.8vw,19px); color:var(--muted);
+      font-weight:300; max-width:540px; line-height:1.7;
+      margin-bottom:52px; position:relative; z-index:1;
+      opacity:0; animation:fadeUp .7s var(--ease) .3s forwards;
+    }
+    .hero-btns {
+      display:flex; gap:14px; flex-wrap:wrap; justify-content:center;
+      position:relative; z-index:1;
+      opacity:0; animation:fadeUp .7s var(--ease) .4s forwards;
+    }
+    .btn-main {
+      background:var(--accent); color:var(--btn-text, #fff); border:none;
+      padding:18px 44px; border-radius:50px;
+      font-size:15px; font-weight:600; cursor:pointer;
+      transition:all .3s var(--ease); text-decoration:none; display:inline-block;
+      font-family:var(--font-b);
+    }
+    .btn-main:hover { filter:brightness(1.12); transform:translateY(-3px); box-shadow:0 20px 50px color-mix(in srgb, var(--accent) 35%, transparent); }
+    .btn-ghost {
+      background:transparent; color:var(--text);
+      border:1px solid rgba(245,245,245,0.22);
+      padding:18px 44px; border-radius:50px;
+      font-size:15px; font-weight:400; cursor:pointer;
+      transition:all .3s var(--ease); text-decoration:none; display:inline-block;
+      font-family:var(--font-b);
+    }
+    .btn-ghost:hover { border-color:var(--accent); color:var(--accent); }
+
+    .hero-stats {
+      display:flex; gap:52px; margin-top:80px; align-items:center;
+      position:relative; z-index:1;
+      opacity:0; animation:fadeUp .7s var(--ease) .55s forwards;
+    }
+    .stat { text-align:center; }
+    .stat-n { font-family:var(--font-d); font-size:40px; font-weight:900; letter-spacing:-2px; display:block; line-height:1; }
+    .stat-l { font-size:12px; color:var(--muted); margin-top:6px; letter-spacing:.5px; display:block; }
+    .stat-sep { width:1px; height:48px; background:rgba(255,255,255,0.1); }
+
+    /* ═══════════════════════════════════
+       CARRUSEL
+       IA: usar imágenes del cliente si las
+       hay. Si NO hay → Unsplash con IDs reales:
+       ✅ https://images.unsplash.com/photo-{ID}?w=800&q=80
+       ❌ source.unsplash.com  ← DEPRECADO, NO USAR
+    ═══════════════════════════════════ */
+    .carousel-section {
+      padding:90px 0;
+      background:var(--surface);
+      border-top:1px solid rgba(255,255,255,0.04);
+      border-bottom:1px solid rgba(255,255,255,0.04);
+    }
+    .carousel-inner { padding:0 56px; }
+    .carousel-header { margin-bottom:44px; }
+    .carousel-track-wrap { overflow:hidden; border-radius:var(--radius); }
+    .carousel-track { display:flex; transition:transform .55s var(--ease); will-change:transform; }
+    .c-slide {
+      flex:0 0 calc(33.333% - 16px); margin-right:24px;
+      aspect-ratio:4/3; border-radius:var(--radius); overflow:hidden;
+      position:relative; background:var(--surface2);
+    }
+    .c-slide img { width:100%; height:100%; object-fit:cover; transition:transform .5s var(--ease); }
+    .c-slide:hover img { transform:scale(1.06); }
+    .c-slide-overlay { position:absolute; inset:0; background:linear-gradient(to top, rgba(0,0,0,.6) 0%, transparent 55%); opacity:0; transition:opacity .3s; }
+    .c-slide:hover .c-slide-overlay { opacity:1; }
+    .carousel-controls { display:flex; align-items:center; justify-content:center; gap:16px; margin-top:32px; }
+    .c-btn {
+      width:46px; height:46px; border-radius:50%;
+      border:1px solid rgba(255,255,255,0.15);
+      background:transparent; color:var(--text);
+      font-size:18px; cursor:pointer;
+      transition:all .25s var(--ease);
+      display:flex; align-items:center; justify-content:center;
+    }
+    .c-btn:hover { background:var(--accent); border-color:var(--accent); }
+    .c-dots { display:flex; gap:8px; }
+    .c-dot { width:8px; height:8px; border-radius:4px; background:rgba(255,255,255,0.2); cursor:pointer; transition:all .3s var(--ease); border:none; }
+    .c-dot.on { width:24px; background:var(--accent); }
+
+    /* ═══════════════════════════════════
+       SECCIÓN BASE
+    ═══════════════════════════════════ */
+    .section { padding:110px 56px; }
+    .s-tag { font-size:11px; font-weight:700; letter-spacing:3px; text-transform:uppercase; color:var(--accent); display:block; margin-bottom:14px; }
+    .s-title { font-family:var(--font-d); font-size:clamp(34px,4.5vw,60px); font-weight:900; line-height:1.05; letter-spacing:-2.5px; margin-bottom:14px; }
+    .s-sub { font-size:17px; color:var(--muted); max-width:480px; line-height:1.7; margin-bottom:64px; font-weight:300; }
+
+    /* ═══════════════════════════════════
+       CARDS — Productos / Servicios
+       IA: 3 cards mínimo, 4 máximo
+    ═══════════════════════════════════ */
+    .cards { display:grid; grid-template-columns:repeat(3,1fr); gap:20px; }
+    .card {
+      background:var(--surface); border:1px solid rgba(255,255,255,0.06);
+      border-radius:var(--radius); padding:36px 32px;
+      transition:all .35s var(--ease); position:relative; overflow:hidden;
+    }
+    .card::after { content:''; position:absolute; inset:0; background:linear-gradient(135deg, color-mix(in srgb, var(--accent) 6%, transparent), transparent); opacity:0; transition:opacity .35s; }
+    .card:hover { transform:translateY(-6px); border-color:color-mix(in srgb, var(--accent) 40%, transparent); box-shadow:0 24px 56px rgba(0,0,0,.4); }
+    .card:hover::after { opacity:1; }
+    .card-icon { width:52px; height:52px; background:color-mix(in srgb, var(--accent) 14%, transparent); border-radius:14px; display:flex; align-items:center; justify-content:center; font-size:24px; margin-bottom:24px; }
+    .card-title { font-family:var(--font-d); font-size:21px; font-weight:800; letter-spacing:-.5px; margin-bottom:10px; }
+    .card-text { color:var(--muted); font-size:14px; line-height:1.8; font-weight:300; }
+    .card-price { font-family:var(--font-d); font-size:30px; font-weight:900; color:var(--accent); margin-top:20px; letter-spacing:-1px; }
+    .card-badge { display:inline-block; font-size:11px; font-weight:700; letter-spacing:1.5px; text-transform:uppercase; background:color-mix(in srgb, var(--accent) 15%, transparent); color:var(--accent); padding:4px 12px; border-radius:50px; margin-bottom:16px; }
+
+    /* ═══════════════════════════════════
+       ABOUT
+    ═══════════════════════════════════ */
+    .about-grid { display:grid; grid-template-columns:1fr 1fr; gap:88px; align-items:center; }
+    .about-img { position:relative; border-radius:var(--radius); overflow:hidden; aspect-ratio:1/1.05; }
+    .about-img img { width:100%; height:100%; object-fit:cover; }
+    .about-img::after { content:''; position:absolute; inset:0; background:linear-gradient(135deg, color-mix(in srgb, var(--accent) 18%, transparent), transparent 60%); }
+    /* Bloque decorativo cuando no hay imagen */
+    .about-deco { width:100%; height:100%; background:var(--surface2); display:flex; align-items:center; justify-content:center; font-family:var(--font-d); font-size:110px; font-weight:900; color:var(--accent); opacity:.15; letter-spacing:-6px; }
+    .about-badge { display:inline-block; background:color-mix(in srgb, var(--accent) 12%, transparent); border:1px solid color-mix(in srgb, var(--accent) 25%, transparent); color:var(--accent); font-size:11px; font-weight:700; letter-spacing:2px; text-transform:uppercase; padding:6px 16px; border-radius:50px; margin-bottom:22px; }
+    .about-title { font-family:var(--font-d); font-size:clamp(30px,3.5vw,50px); font-weight:900; letter-spacing:-2px; line-height:1.1; margin-bottom:20px; }
+    .about-text { color:var(--muted); font-size:16px; line-height:1.85; font-weight:300; margin-bottom:36px; }
+
+    /* ═══════════════════════════════════
+       TESTIMONIALES
+    ═══════════════════════════════════ */
+    .testi-wrap { overflow-x:auto; scroll-snap-type:x mandatory; padding-bottom:12px; scrollbar-width:none; }
+    .testi-wrap::-webkit-scrollbar { display:none; }
+    .testi-row { display:flex; gap:20px; width:max-content; }
+    .testi-card { flex:0 0 340px; scroll-snap-align:start; background:var(--surface); border:1px solid rgba(255,255,255,0.06); border-radius:var(--radius); padding:36px; transition:border-color .3s; }
+    .testi-card:hover { border-color:color-mix(in srgb, var(--accent) 30%, transparent); }
+    .testi-stars { color:#FFB800; font-size:14px; letter-spacing:3px; margin-bottom:18px; }
+    .testi-q { color:var(--muted); font-size:15px; line-height:1.8; font-style:italic; font-weight:300; margin-bottom:24px; }
+    .testi-author { display:flex; align-items:center; gap:12px; }
+    .testi-av { width:42px; height:42px; border-radius:50%; flex-shrink:0; background:color-mix(in srgb, var(--accent) 20%, transparent); display:flex; align-items:center; justify-content:center; font-family:var(--font-d); font-weight:900; font-size:15px; color:var(--accent); }
+    .testi-name { font-weight:600; font-size:14px; display:block; }
+    .testi-role { font-size:12px; color:var(--muted); }
+
+    /* ═══════════════════════════════════
+       CTA FINAL
+    ═══════════════════════════════════ */
+    .cta-wrap { padding:0 56px 110px; }
+    .cta-box {
+      background:linear-gradient(135deg, var(--accent) 0%, var(--accent2) 100%);
+      border-radius:28px; padding:96px 80px; text-align:center;
+      position:relative; overflow:hidden;
+    }
+    .cta-box::before { content:''; position:absolute; inset:0; background-image:radial-gradient(circle at 15% 50%, rgba(255,255,255,.08) 0%, transparent 45%), radial-gradient(circle at 85% 50%, rgba(255,255,255,.05) 0%, transparent 45%); }
+    .cta-title { font-family:var(--font-d); font-size:clamp(32px,4.5vw,60px); font-weight:900; color:#fff; letter-spacing:-2.5px; line-height:1.05; margin-bottom:16px; position:relative; }
+    .cta-sub { font-size:18px; color:rgba(255,255,255,.75); margin-bottom:48px; font-weight:300; position:relative; }
+    .cta-btns { display:flex; gap:14px; justify-content:center; flex-wrap:wrap; position:relative; }
+    .btn-white { background:#fff; color:#000; border:none; padding:18px 46px; border-radius:50px; font-size:15px; font-weight:700; cursor:pointer; transition:all .3s var(--ease); text-decoration:none; display:inline-block; font-family:var(--font-b); }
+    .btn-white:hover { transform:translateY(-3px); box-shadow:0 20px 40px rgba(0,0,0,.3); }
+    .btn-wh-outline { background:transparent; color:#fff; border:1.5px solid rgba(255,255,255,.45); padding:18px 46px; border-radius:50px; font-size:15px; font-weight:500; cursor:pointer; transition:all .3s var(--ease); text-decoration:none; display:inline-block; font-family:var(--font-b); }
+    .btn-wh-outline:hover { background:rgba(255,255,255,.12); border-color:#fff; }
+
+    /* ═══════════════════════════════════
+       FOOTER
+    ═══════════════════════════════════ */
+    .footer { background:#040404; padding:72px 56px 36px; border-top:1px solid rgba(255,255,255,0.05); }
+    .footer-grid { display:grid; grid-template-columns:2fr 1fr 1fr; gap:56px; margin-bottom:56px; }
+    .footer-brand { font-family:var(--font-d); font-size:24px; font-weight:900; letter-spacing:-.5px; margin-bottom:14px; }
+    .footer-brand span { color:var(--accent); }
+    .footer-desc { color:var(--muted); font-size:14px; line-height:1.8; max-width:270px; font-weight:300; }
+    .footer-col h4 { font-size:11px; font-weight:700; letter-spacing:2.5px; text-transform:uppercase; color:rgba(245,245,245,.3); margin-bottom:22px; }
+    .footer-links { list-style:none; display:flex; flex-direction:column; gap:13px; }
+    .footer-links a { color:rgba(245,245,245,.35); text-decoration:none; font-size:14px; font-weight:300; transition:color .2s; }
+    .footer-links a:hover { color:var(--accent); }
+    .footer-bottom { border-top:1px solid rgba(255,255,255,0.05); padding-top:28px; display:flex; justify-content:space-between; align-items:center; }
+    .footer-copy { color:rgba(245,245,245,.2); font-size:13px; }
+    .footer-badge { font-size:12px; color:rgba(245,245,245,.2); background:rgba(255,255,255,.04); padding:6px 16px; border-radius:50px; }
+
+    /* ═══════════════════════════════════
+       WHATSAPP FLOTANTE
+       ⚠️ NO MODIFICAR — SIEMPRE PRESENTE
+    ═══════════════════════════════════ */
+    .wa-float {
+      position:fixed;
+      bottom:28px;
+      right:28px;
+      z-index:99999;
+      width:62px;
+      height:62px;
+      border-radius:50%;
+      background:#25D366;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      box-shadow:0 6px 28px rgba(37,211,102,.5);
+      text-decoration:none;
+      transition:transform .3s var(--ease);
+      animation:waPulse 2.5s ease-in-out infinite;
+    }
+    .wa-float:hover {
+      transform:scale(1.14) !important;
+      animation:none;
+      box-shadow:0 8px 36px rgba(37,211,102,.75);
+    }
+    .wa-float svg {
+      width:30px;
+      height:30px;
+      fill:#ffffff;
+      display:block;
+      flex-shrink:0;
+    }
+
+    /* ═══════════════════════════════════
+       REVEAL SCROLL
+    ═══════════════════════════════════ */
+    .rv { opacity:0; transform:translateY(36px); transition:opacity .75s var(--ease), transform .75s var(--ease); }
+    .rv.on { opacity:1; transform:translateY(0); }
+    .rv.d1 { transition-delay:.1s; }
+    .rv.d2 { transition-delay:.2s; }
+    .rv.d3 { transition-delay:.3s; }
+    .rv.d4 { transition-delay:.4s; }
+
+    /* ═══════════════════════════════════
+       KEYFRAMES
+    ═══════════════════════════════════ */
+    @keyframes fadeUp  { from{opacity:0;transform:translateY(28px)} to{opacity:1;transform:translateY(0)} }
+    @keyframes float   { 0%,100%{transform:translateY(0) scale(1)} 50%{transform:translateY(-30px) scale(1.04)} }
+    @keyframes waPulse { 0%,100%{box-shadow:0 6px 28px rgba(37,211,102,.5)} 50%{box-shadow:0 8px 48px rgba(37,211,102,.85)} }
+
+    /* ═══════════════════════════════════
+       RESPONSIVE
+    ═══════════════════════════════════ */
+    @media (max-width:900px) {
+      .nav { padding:16px 20px; }
+      .nav.solid { padding:14px 20px; }
+      .nav-links { display:none; }
+      .hero { padding:110px 20px 80px; }
+      .hero-title { letter-spacing:-2px; }
+      .hero-stats { gap:20px; flex-wrap:wrap; justify-content:center; }
+      .section { padding:80px 20px; }
+      .cards { grid-template-columns:1fr; }
+      .about-grid { grid-template-columns:1fr; gap:40px; }
+      .carousel-inner { padding:0 20px; }
+      .c-slide { flex:0 0 calc(85% - 12px); }
+      .cta-wrap { padding:0 16px 80px; }
+      .cta-box { padding:60px 28px; }
+      .footer { padding:60px 20px 28px; }
+      .footer-grid { grid-template-columns:1fr; gap:36px; }
+      .footer-bottom { flex-direction:column; gap:14px; text-align:center; }
+      .wa-float { bottom:20px; right:20px; width:56px; height:56px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ══════════════════════
+       NAVBAR
+  ═══════════════════════ -->
+  <nav class="nav" id="nav">
+    <a href="#" class="nav-logo">{{LOGO_P1}}<span>{{LOGO_P2}}</span></a>
+    <ul class="nav-links">
+      <li><a href="#productos">{{NAV_1}}</a></li>
+      <li><a href="#nosotros">{{NAV_2}}</a></li>
+      <li><a href="#galeria">{{NAV_3}}</a></li>
+      <li><a href="#contacto">Contacto</a></li>
+    </ul>
+    <button class="nav-cta" onclick="window.open('https://wa.me/{{WHATSAPP_NUMBER}}','_blank')">{{NAV_CTA}}</button>
+  </nav>
+
+
+  <!-- ══════════════════════
+       HERO
+       Divide el título en 3 líneas:
+       Línea 1 → texto normal
+       Línea 2 → .hl  (color acento)
+       Línea 3 → .dim (muted)
+  ═══════════════════════ -->
+  <section class="hero">
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+    <span class="hero-eyebrow">{{HERO_EYEBROW}}</span>
+    <h1 class="hero-title">
+      {{HERO_LINE_1}}<br>
+      <span class="hl">{{HERO_LINE_2}}</span><br>
+      <span class="dim">{{HERO_LINE_3}}</span>
+    </h1>
+    <p class="hero-sub">{{HERO_SUBTITLE}}</p>
+    <div class="hero-btns">
+      <a href="https://wa.me/{{WHATSAPP_NUMBER}}" class="btn-main" target="_blank">{{CTA_PRIMARY}} →</a>
+      <a href="#productos" class="btn-ghost">{{CTA_SECONDARY}}</a>
+    </div>
+    <div class="hero-stats">
+      <div class="stat"><span class="stat-n">{{STAT_1_NUM}}</span><span class="stat-l">{{STAT_1_LBL}}</span></div>
+      <div class="stat-sep"></div>
+      <div class="stat"><span class="stat-n">{{STAT_2_NUM}}</span><span class="stat-l">{{STAT_2_LBL}}</span></div>
+      <div class="stat-sep"></div>
+      <div class="stat"><span class="stat-n">{{STAT_3_NUM}}</span><span class="stat-l">{{STAT_3_LBL}}</span></div>
+    </div>
+  </section>
+
+
+  <!-- ══════════════════════
+       CARRUSEL
+       Si hay imágenes del cliente → usar esas URLs directamente
+       Si NO hay imágenes → Unsplash con IDs reales:
+       ✅ https://images.unsplash.com/photo-{ID}?w=800&q=80
+       ❌ NO usar source.unsplash.com — está muerto
+
+       IDs reales sugeridos por industria:
+       Comida:    567620832903-9fc6debc209f / 630431341973-02e1b662ec35
+       Papas:     1541592106381-b31e9677c0e5 / 1562967914-608f82629710
+       Moda:      1536619 / 1445341 / 1620328
+       Belleza:   1570129 / 1552058 / 1571938
+       Fitness:   1534438 / 1552252 / 1605296
+       Tech:      1714208 / 1518770 / 1562408
+       Restaurante: 1565050 / 1600891964092 / 1414235
+  ═══════════════════════ -->
+  <section class="carousel-section" id="galeria">
+    <div class="carousel-inner">
+      <div class="carousel-header">
+        <span class="s-tag rv">{{CAROUSEL_TAG}}</span>
+        <h2 class="s-title rv">{{CAROUSEL_TITLE}}</h2>
+      </div>
+      <div class="carousel-track-wrap">
+        <div class="carousel-track" id="cTrack">
+          <div class="c-slide"><img src="{{SLIDE_1_URL}}" alt="{{SLIDE_1_ALT}}"><div class="c-slide-overlay"></div></div>
+          <div class="c-slide"><img src="{{SLIDE_2_URL}}" alt="{{SLIDE_2_ALT}}"><div class="c-slide-overlay"></div></div>
+          <div class="c-slide"><img src="{{SLIDE_3_URL}}" alt="{{SLIDE_3_ALT}}"><div class="c-slide-overlay"></div></div>
+          <div class="c-slide"><img src="{{SLIDE_4_URL}}" alt="{{SLIDE_4_ALT}}"><div class="c-slide-overlay"></div></div>
+          <div class="c-slide"><img src="{{SLIDE_5_URL}}" alt="{{SLIDE_5_ALT}}"><div class="c-slide-overlay"></div></div>
+          <!-- IA: Formato correcto de URLs:
+               ✅ https://images.unsplash.com/photo-1567620832903-9fc6debc209f?w=800&q=80
+               ❌ https://source.unsplash.com/1600x900/?keyword  ← NO FUNCIONA -->
+        </div>
+      </div>
+      <div class="carousel-controls">
+        <button class="c-btn" id="cPrev">&#8592;</button>
+        <div class="c-dots" id="cDots"></div>
+        <button class="c-btn" id="cNext">&#8594;</button>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ══════════════════════
+       PRODUCTOS / SERVICIOS
+       3-4 cards con emoji en icon
+       Descomentar .card-price si hay precio
+       Descomentar .card-badge si hay categoría
+  ═══════════════════════ -->
+  <section class="section" id="productos">
+    <span class="s-tag rv">{{PRODUCTS_TAG}}</span>
+    <h2 class="s-title rv">{{PRODUCTS_TITLE}}</h2>
+    <p class="s-sub rv">{{PRODUCTS_SUBTITLE}}</p>
+    <div class="cards">
+      <div class="card rv d1">
+        <div class="card-icon">{{CARD_1_ICON}}</div>
+        <!-- <span class="card-badge">{{CARD_1_BADGE}}</span> -->
+        <div class="card-title">{{CARD_1_TITLE}}</div>
+        <p class="card-text">{{CARD_1_TEXT}}</p>
+        <!-- <div class="card-price">{{CARD_1_PRICE}}</div> -->
+      </div>
+      <div class="card rv d2">
+        <div class="card-icon">{{CARD_2_ICON}}</div>
+        <div class="card-title">{{CARD_2_TITLE}}</div>
+        <p class="card-text">{{CARD_2_TEXT}}</p>
+      </div>
+      <div class="card rv d3">
+        <div class="card-icon">{{CARD_3_ICON}}</div>
+        <div class="card-title">{{CARD_3_TITLE}}</div>
+        <p class="card-text">{{CARD_3_TEXT}}</p>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ══════════════════════
+       ABOUT
+       Si hay imagen → <img src="URL">
+       Si NO hay    → dejar .about-deco
+  ═══════════════════════ -->
+  <section class="section" id="nosotros">
+    <div class="about-grid">
+      <div>
+        <span class="about-badge rv">{{ABOUT_TAG}}</span>
+        <h2 class="about-title rv">{{ABOUT_TITLE}}</h2>
+        <p class="about-text rv">{{ABOUT_TEXT}}</p>
+        <a href="https://wa.me/{{WHATSAPP_NUMBER}}" class="btn-main rv" target="_blank">{{ABOUT_CTA}} →</a>
+      </div>
+      <div class="about-img rv">
+        <!-- CON imagen del cliente: <img src="{{ABOUT_IMAGE_URL}}" alt="{{BUSINESS_NAME}}"> -->
+        <!-- SIN imagen (decorativo): -->
+        <div class="about-deco">{{BUSINESS_INITIALS}}</div>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ══════════════════════
+       TESTIMONIALES
+       4 cards con nombres latinoamericanos
+       Avatares = 2 iniciales del nombre
+  ═══════════════════════ -->
+  <section class="section">
+    <span class="s-tag rv">Testimonios</span>
+    <h2 class="s-title rv">Lo que dicen<br>nuestros clientes</h2>
+    <div class="testi-wrap rv">
+      <div class="testi-row">
+        <div class="testi-card">
+          <div class="testi-stars">★★★★★</div>
+          <p class="testi-q">"{{TESTI_1_TEXT}}"</p>
+          <div class="testi-author"><div class="testi-av">{{TESTI_1_INITIALS}}</div><div><span class="testi-name">{{TESTI_1_NAME}}</span><span class="testi-role">{{TESTI_1_ROLE}}</span></div></div>
+        </div>
+        <div class="testi-card">
+          <div class="testi-stars">★★★★★</div>
+          <p class="testi-q">"{{TESTI_2_TEXT}}"</p>
+          <div class="testi-author"><div class="testi-av">{{TESTI_2_INITIALS}}</div><div><span class="testi-name">{{TESTI_2_NAME}}</span><span class="testi-role">{{TESTI_2_ROLE}}</span></div></div>
+        </div>
+        <div class="testi-card">
+          <div class="testi-stars">★★★★★</div>
+          <p class="testi-q">"{{TESTI_3_TEXT}}"</p>
+          <div class="testi-author"><div class="testi-av">{{TESTI_3_INITIALS}}</div><div><span class="testi-name">{{TESTI_3_NAME}}</span><span class="testi-role">{{TESTI_3_ROLE}}</span></div></div>
+        </div>
+        <div class="testi-card">
+          <div class="testi-stars">★★★★☆</div>
+          <p class="testi-q">"{{TESTI_4_TEXT}}"</p>
+          <div class="testi-author"><div class="testi-av">{{TESTI_4_INITIALS}}</div><div><span class="testi-name">{{TESTI_4_NAME}}</span><span class="testi-role">{{TESTI_4_ROLE}}</span></div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ══════════════════════
+       CTA FINAL
+  ═══════════════════════ -->
+  <div class="cta-wrap" id="contacto">
+    <div class="cta-box">
+      <h2 class="cta-title">{{CTA_TITLE}}</h2>
+      <p class="cta-sub">{{CTA_SUBTITLE}}</p>
+      <div class="cta-btns">
+        <a href="https://wa.me/{{WHATSAPP_NUMBER}}" class="btn-white" target="_blank">💬 Escribir por WhatsApp</a>
+        <!-- Si tiene teléfono: <a href="tel:{{PHONE}}" class="btn-wh-outline">📞 Llamar ahora</a> -->
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ══════════════════════
+       FOOTER
+  ═══════════════════════ -->
+  <footer class="footer">
+    <div class="footer-grid">
+      <div>
+        <div class="footer-brand">{{FOOTER_LOGO_P1}}<span>{{FOOTER_LOGO_P2}}</span></div>
+        <p class="footer-desc">{{FOOTER_DESC}}</p>
+      </div>
+      <div class="footer-col">
+        <h4>Navegación</h4>
+        <ul class="footer-links">
+          <li><a href="#">Inicio</a></li>
+          <li><a href="#productos">{{NAV_1}}</a></li>
+          <li><a href="#nosotros">{{NAV_2}}</a></li>
+          <li><a href="#contacto">Contacto</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Contacto</h4>
+        <ul class="footer-links">
+          <li><a href="https://wa.me/{{WHATSAPP_NUMBER}}" target="_blank">WhatsApp</a></li>
+          <!-- <li><a href="tel:{{PHONE}}">{{PHONE_DISPLAY}}</a></li> -->
+          <!-- <li><a href="mailto:{{EMAIL}}">{{EMAIL}}</a></li> -->
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span class="footer-copy">© 2025 {{BUSINESS_NAME}}. Todos los derechos reservados.</span>
+      <span class="footer-badge">Hecho con LandingAI ✦</span>
+    </div>
+  </footer>
+
+
+  <!-- ══════════════════════════════════════════
+       ⚠️  BOTÓN WHATSAPP FLOTANTE
+       OBLIGATORIO — NUNCA ELIMINAR NI MOVER
+       Siempre justo antes de </body>
+       Reemplazar {{WHATSAPP_NUMBER}} con el número
+  ════════════════════════════════════════════ -->
+  <a class="wa-float"
+     href="https://wa.me/{{WHATSAPP_NUMBER}}"
+     target="_blank"
+     rel="noopener"
+     aria-label="Contáctanos por WhatsApp">
+    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+      <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15
+               -.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075
+               -.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059
+               -.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52
+               .149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52
+               -.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51
+               -.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372
+               -.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074
+               .149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625
+               .712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413
+               .248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/>
+      <path d="M12 0C5.373 0 0 5.373 0 12c0 2.126.556 4.123 1.526 5.855
+               L.057 23.882l6.186-1.438A11.934 11.934 0 0012 24
+               c6.627 0 12-5.373 12-12S18.627 0 12 0z
+               m0 22c-1.885 0-3.65-.518-5.16-1.418l-.36-.214-3.733.868
+               .939-3.62-.236-.374A9.96 9.96 0 012 12
+               C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/>
+    </svg>
+  </a>
+
+
+  <script>
+    /* ── Navbar scroll ── */
+    const _nav = document.getElementById('nav');
+    window.addEventListener('scroll', () =>
+      _nav && _nav.classList.toggle('solid', window.scrollY > 60)
+    , {passive:true});
+
+    /* ── Scroll reveal ── */
+    const _ro = new IntersectionObserver(
+      es => es.forEach(e => { if(e.isIntersecting) e.target.classList.add('on'); }),
+      {threshold:.1}
+    );
+    document.querySelectorAll('.rv').forEach(el => _ro.observe(el));
+
+    /* ── Carrusel ── */
+    (function(){
+      const track  = document.getElementById('cTrack');
+      const dots   = document.getElementById('cDots');
+      if(!track || !dots) return;
+
+      const slides = Array.from(track.querySelectorAll('.c-slide'));
+      const GAP    = 24;
+      let cur      = 0;
+
+      const isMob  = () => window.innerWidth < 900;
+      const vis    = () => isMob() ? 1 : 3;
+      const maxI   = () => Math.max(0, slides.length - vis());
+
+      /* crear dots dinámicamente */
+      function buildDots(){
+        dots.innerHTML = '';
+        for(let i = 0; i <= maxI(); i++){
+          const d = document.createElement('button');
+          d.className = 'c-dot' + (i === 0 ? ' on' : '');
+          d.setAttribute('aria-label', 'Ir a slide ' + (i+1));
+          d.onclick = () => go(i);
+          dots.appendChild(d);
+        }
+      }
+
+      function go(n){
+        cur = Math.max(0, Math.min(n, maxI()));
+        const w = slides[0].getBoundingClientRect().width + GAP;
+        track.style.transform = `translateX(-${cur * w}px)`;
+        dots.querySelectorAll('.c-dot').forEach((d,i) =>
+          d.classList.toggle('on', i === cur)
+        );
+      }
+
+      document.getElementById('cPrev').onclick = () => go(cur - 1);
+      document.getElementById('cNext').onclick = () => go(cur < maxI() ? cur + 1 : 0);
+
+      /* auto-play */
+      setInterval(() => go(cur < maxI() ? cur + 1 : 0), 4500);
+
+      /* recalcular al resize */
+      let resizeTimer;
+      window.addEventListener('resize', () => {
+        clearTimeout(resizeTimer);
+        resizeTimer = setTimeout(() => { buildDots(); go(0); }, 200);
+      }, {passive:true});
+
+      buildDots();
+    })();
+  </script>
+
+</body>
+</html>
