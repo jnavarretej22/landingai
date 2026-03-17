@@ -19,6 +19,8 @@ interface ChatProps {
   onGenerate: (messages: Message[], images: string[], logo?: string | null) => void;
   isGenerating: boolean;
   onImageUpload?: (url: string) => void;
+  templateLabel?: string;
+  onTemplateChange?: () => void;
 }
 
 const READY_PATTERNS = [
@@ -68,13 +70,14 @@ export default function Chat({ onGenerate, isGenerating, onImageUpload }: ChatPr
   const [logoDecision,    setLogoDecision]    = useState<'yes' | 'no' | null>(null);
   const [logoImage,       setLogoImage]       = useState<UploadedImage | null>(null);
   const [pendingAutoMsgs, setPendingAutoMsgs] = useState<Message[] | null>(null);
+  const [showImageUploader, setShowImageUploader] = useState(false);
+  const [showLogoUploader,  setShowLogoUploader]  = useState(false);
 
   const messagesEndRef  = useRef<HTMLDivElement>(null);
   const latestMessages  = useRef<Message[]>(messages);
   const abortRef        = useRef<AbortController | null>(null);
 
   const isLogoStepSatisfied = logoDecision === 'no' || (logoDecision === 'yes' && Boolean(logoImage));
-  const waitingLogoAnswer = Boolean(pendingAutoMsgs && !isLogoStepSatisfied);
 
   // Keep ref in sync for use inside stream callbacks
   useEffect(() => { latestMessages.current = messages; }, [messages]);
@@ -280,36 +283,124 @@ export default function Chat({ onGenerate, isGenerating, onImageUpload }: ChatPr
 
   return (
     <div className="flex flex-col h-full bg-white border border-gray-200 rounded-lg shadow-sm">
+      <div className="flex items-center justify-between px-4 py-2 border-b border-gray-100 bg-gray-50">
+        <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Herramientas</p>
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            className={`h-8 px-3 rounded-md border text-sm font-semibold transition ${
+              showImageUploader ? 'border-blue-500 text-blue-600 bg-blue-50' : 'border-gray-200 text-gray-600 hover:border-gray-300'
+            }`}
+            onClick={() => {
+              setShowImageUploader(v => !v);
+              if (!showImageUploader) setShowLogoUploader(false);
+            }}
+          >
+            📷 Fotos
+          </button>
+          <button
+            type="button"
+            className={`h-8 px-3 rounded-md border text-sm font-semibold transition ${
+              showLogoUploader ? 'border-blue-500 text-blue-600 bg-blue-50' : 'border-gray-200 text-gray-600 hover:border-gray-300'
+            }`}
+            onClick={() => {
+              setShowLogoUploader(v => !v);
+              if (!showLogoUploader) setShowImageUploader(false);
+            }}
+          >
+            🏷️ Logo
+          </button>
+        </div>
+      </div>
+
+      {(showImageUploader || showLogoUploader) && (
+        <div className="px-4 py-3 border-b border-gray-100 bg-gray-50 space-y-3">
+          {showImageUploader && (
+            <div className="rounded-lg border border-dashed border-gray-300 bg-white p-3">
+              <p className="text-xs text-gray-500 mb-2">Carga imágenes del negocio (JPG/PNG, máx. 5MB).</p>
+              <ImageUploader onUploadSuccess={handleUploadSuccess} />
+            </div>
+          )}
+          {showLogoUploader && (
+            <div className="rounded-lg border border-dashed border-gray-300 bg-white p-3 space-y-2">
+              <p className="text-xs font-semibold text-gray-600">Logo opcional</p>
+              <div className="flex gap-2 text-xs font-semibold">
+                {(['yes', 'no'] as const).map(option => (
+                  <button
+                    key={option}
+                    type="button"
+                    onClick={() => handleLogoChoice(option)}
+                    className={`px-3 py-1 rounded-full border transition ${
+                      logoDecision === option
+                        ? option === 'yes'
+                          ? 'bg-emerald-500/10 text-emerald-700 border-emerald-500/40'
+                          : 'bg-gray-100 text-gray-600 border-gray-200'
+                        : 'bg-white text-gray-500 border-gray-200 hover:border-gray-300'
+                    }`}
+                    disabled={isGenerating}
+                  >
+                    {option === 'yes' ? 'Sí' : 'No'}
+                  </button>
+                ))}
+              </div>
+              {logoDecision === 'yes' && (
+                <LogoUploader
+                  onUploadSuccess={handleLogoUpload}
+                  onRemove={clearLogo}
+                  preview={logoImage}
+                  disabled={isGenerating || isLoading}
+                />
+              )}
+              {logoDecision === 'no' && (
+                <p className="text-[11px] text-gray-500">Puedes activarlo más tarde.</p>
+              )}
+            </div>
+          )}
+        </div>
+      )}
+
       {/* Messages */}
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
         {messages.map((m, i) => {
           const isLast         = i === messages.length - 1;
           const isStreaming     = isLast && m.role === 'assistant' && isLoading;
           const showTypingDots  = isLast && m.role === 'assistant' && isLoading && m.content === '';
+          const isUser          = m.role === 'user';
 
           return (
-            <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-              <div className={`max-w-[85%] rounded-xl px-4 py-3 ${
-                m.role === 'user' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-800'
-              }`}>
-                {showTypingDots ? (
-                  <div className="flex gap-1 items-center py-1">
-                    {[0, 1, 2].map(j => (
-                      <span
-                        key={j}
-                        className="w-2 h-2 rounded-full bg-gray-400 animate-bounce"
-                        style={{ animationDelay: `${j * 0.15}s` }}
-                      />
-                    ))}
+            <div key={i} className={`flex ${isUser ? 'justify-end' : 'justify-start'}`}>
+              <div className={`flex ${isUser ? 'flex-row-reverse' : 'flex-row'} items-start gap-3 max-w-[85%]`}>
+                {!isUser && (
+                  <div className="w-7 h-7 rounded-full bg-[rgba(99,102,241,0.2)] text-[#6366F1] text-[11px] font-semibold flex items-center justify-center">
+                    IA
                   </div>
-                ) : (
-                  <p className="text-sm whitespace-pre-wrap">
-                    {m.content}
-                    {isStreaming && m.content !== '' && (
-                      <span className="inline-block w-0.5 h-4 bg-gray-500 ml-0.5 animate-pulse align-middle" />
-                    )}
-                  </p>
                 )}
+                <div
+                  className={`${
+                    isUser
+                      ? 'bg-[#6366F1] text-white rounded-[18px_18px_4px_18px]'
+                      : 'bg-[#1E1E1E] text-gray-100 border-l-2 border-[#6366F1] rounded-[18px_18px_18px_4px]'
+                  } px-4 py-3 shadow-sm w-full`}
+                >
+                  {showTypingDots ? (
+                    <div className="flex gap-1 items-center py-1">
+                      {[0, 1, 2].map(j => (
+                        <span
+                          key={j}
+                          className="w-2 h-2 rounded-full bg-current animate-bounce"
+                          style={{ animationDelay: `${j * 0.15}s` }}
+                        />
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-sm whitespace-pre-wrap">
+                      {m.content}
+                      {isStreaming && m.content !== '' && (
+                        <span className="inline-block w-0.5 h-4 bg-gray-500 ml-0.5 animate-pulse align-middle" />
+                      )}
+                    </p>
+                  )}
+                </div>
               </div>
             </div>
           );
@@ -337,47 +428,6 @@ export default function Chat({ onGenerate, isGenerating, onImageUpload }: ChatPr
 
       {/* Input area */}
       <div className="p-4 border-t border-gray-100 space-y-3 bg-gray-50 rounded-b-lg">
-        <div className="border border-gray-200 rounded-md bg-white px-3 py-2 flex flex-wrap items-center gap-2 text-xs">
-          <div className="flex-1 min-w-[180px]">
-            <p className="font-semibold text-gray-600">Logo opcional</p>
-            <p className="text-[11px] text-gray-500">Enlázalo al header si quieres.</p>
-          </div>
-          {(['yes', 'no'] as const).map(option => (
-            <button
-              key={option}
-              type="button"
-              onClick={() => handleLogoChoice(option)}
-              className={`px-3 py-1 rounded-full border text-[11px] font-semibold transition ${
-                logoDecision === option
-                  ? option === 'yes'
-                    ? 'bg-emerald-500/10 text-emerald-700 border-emerald-500/40'
-                    : 'bg-gray-100 text-gray-600 border-gray-200'
-                  : 'bg-white text-gray-500 border-gray-200 hover:border-gray-300'
-              }`}
-              disabled={isGenerating}
-            >
-              {option === 'yes' ? 'Sí' : 'No'}
-            </button>
-          ))}
-          {waitingLogoAnswer && (
-            <span className="text-[11px] font-semibold text-amber-600">Responde para seguir</span>
-          )}
-        </div>
-        {logoDecision === 'yes' && (
-          <div className="rounded-md border border-dashed border-emerald-200 bg-emerald-50/40 p-2">
-            <LogoUploader
-              onUploadSuccess={handleLogoUpload}
-              onRemove={clearLogo}
-              preview={logoImage}
-              disabled={isGenerating || isLoading}
-            />
-          </div>
-        )}
-        {logoDecision === 'no' && (
-          <p className="text-[10px] text-gray-400">Puedes activarlo más tarde.</p>
-        )}
-
-        <ImageUploader onUploadSuccess={handleUploadSuccess} />
 
         {uploadedImages.length > 0 && (
           <div className="flex flex-wrap gap-2">
@@ -422,9 +472,10 @@ export default function Chat({ onGenerate, isGenerating, onImageUpload }: ChatPr
         <button
           onClick={handleManualGenerate}
           disabled={isGenerating || messages.length < 2 || isLoading || !isLogoStepSatisfied}
-          className="w-full bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white font-bold py-3 rounded-lg transition-all shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full bg-[#6366F1] hover:bg-[#4F46E5] text-white font-semibold text-[15px] py-3 px-6 rounded-[10px] flex items-center justify-center gap-2 shadow-md transition disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          {isGenerating ? '⏳ Generando diseño...' : '✨ Generar mi Landing Page'}
+          <span className="text-sm">✦</span>
+          {isGenerating ? 'Generando diseño...' : 'Generar mi Landing Page'}
         </button>
       </div>
     </div>
