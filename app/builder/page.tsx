@@ -64,7 +64,7 @@ export default function BuilderPage() {
   }, []);
 
   // ── Generate handler ──────────────────────────────────
-  const handleGenerate = useCallback(async (messages: Message[], images: string[] = []) => {
+  const handleGenerate = useCallback(async (messages: Message[], images: string[] = [], logo?: string | null) => {
     setIsGenerating(true);
     try {
       const res  = await fetch('/api/generate', {
@@ -73,6 +73,7 @@ export default function BuilderPage() {
         body:    JSON.stringify({
           messages,
           images,
+          logo,
           // Pass the user-selected template to the API (undefined if AI decides)
           forcedTemplate: selectedTemplate && selectedTemplate !== 'ai' ? selectedTemplate : undefined,
         }),

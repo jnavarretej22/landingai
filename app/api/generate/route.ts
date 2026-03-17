@@ -10,6 +10,8 @@ interface LandingPageData {
   name?: string;
   logoP1?: string;
   logoP2?: string;
+  logoImage?: string;
+  logoAlt?: string;
   businessTagline?: string;
   displayFont?: string;
   bodyFont?: string;
@@ -126,6 +128,138 @@ function lighten(hex: string | undefined, amount = 12): string {
   return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
 }
 
+const FILLER_WORDS = new Set([
+  'para', 'con', 'de', 'del', 'la', 'las', 'los', 'el', 'por', 'una', 'un', 'tu', 'sus', 'su', 'nuestro', 'nuestra',
+  'nuestros', 'nuestras', 'y', 'en', 'lo', 'al', 'sobre'
+]);
+
+const HEADLINE_FIELDS: (keyof LandingPageData)[] = [
+  'heroLine1', 'heroLine2', 'heroLine3', 'heroSubtitle', 'heroEyebrow',
+  'nav1', 'nav2', 'nav3', 'navCta', 'ctaPrimary', 'ctaSecondary',
+  'carouselTag', 'carouselTitle', 'productsTag', 'productsTitle', 'productsSub',
+  'aboutTag', 'aboutTitle', 'aboutText', 'aboutCta',
+  'stat1lbl', 'stat2lbl', 'stat3lbl', 'ctaTitle', 'ctaSubtitle',
+  'footerDesc', 'businessTagline'
+];
+
+function compactHeadline(text?: string, minimumWords = 1): string {
+  if (!text) return '';
+  const normalized = text.replace(/[–—]/g, ' ').replace(/\s+/g, ' ').trim();
+  if (!normalized) return '';
+  const words = normalized.split(' ');
+  if (words.length <= 3) return normalized;
+  const target = Math.max(minimumWords, Math.floor(words.length * 0.7));
+  const picked: string[] = [];
+  for (let i = 0; i < words.length && picked.length < target; i++) {
+    const word = words[i];
+    const lower = word.toLowerCase();
+    const remaining = words.length - i - 1;
+    const canSkip = FILLER_WORDS.has(lower) && remaining >= (target - picked.length);
+    if (canSkip) continue;
+    picked.push(word);
+  }
+  if (picked.length === 0) {
+    picked.push(...words.slice(0, target));
+  }
+  const compacted = picked.join(' ').replace(/\s+/g, ' ').trim();
+  if (!compacted) return normalized;
+  return compacted.charAt(0).toUpperCase() + compacted.slice(1);
+}
+
+function tightenCopy(data: LandingPageData): LandingPageData {
+  for (const key of HEADLINE_FIELDS) {
+    const value = data[key];
+    if (typeof value === 'string' && value.trim().length > 0) {
+      (data as Record<string, unknown>)[key] = compactHeadline(value);
+    }
+  }
+  if (data.cards?.length) {
+    data.cards = data.cards.map(card => ({
+      ...card,
+      title: compactHeadline(card.title),
+      text: compactHeadline(card.text, 2),
+      price: card.price ? compactHeadline(card.price) : card.price,
+    }));
+  }
+  if (data.testimonials?.length) {
+    data.testimonials = data.testimonials.map(testi => ({
+      ...testi,
+      text: compactHeadline(testi.text, 3),
+      role: compactHeadline(testi.role),
+    }));
+  }
+  return data;
+}
+
+const RESPONSIVE_COPY_STYLES = `
+    /* Auto balance hero & headlines */
+    .nav-logo {
+      display:flex;
+      align-items:center;
+      gap:12px;
+    }
+    .nav-logo-img-wrap {
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      max-height:52px;
+      max-width:180px;
+    }
+    .nav-logo-img-wrap img {
+      max-height:52px;
+      max-width:180px;
+      width:auto;
+      object-fit:contain;
+    }
+    .hero-title,
+    .s-title,
+    .about-title,
+    .cta-title {
+      text-wrap:balance;
+      word-break:break-word;
+    }
+    .hero-title {
+      max-width:min(900px, 92vw);
+      margin-inline:auto;
+    }
+    .hero-sub,
+    .s-sub,
+    .about-text,
+    .cta-sub {
+      max-width:min(640px, 100%);
+    }
+    .card-title {
+      text-wrap:balance;
+      word-break:break-word;
+    }
+    @supports (-webkit-line-clamp: 3) {
+      .hero-title,
+      .s-title,
+      .about-title,
+      .cta-title {
+        display:-webkit-box;
+        -webkit-box-orient:vertical;
+        -webkit-line-clamp:3;
+        overflow:hidden;
+      }
+      .hero-sub,
+      .s-sub,
+      .about-text,
+      .cta-sub {
+        display:-webkit-box;
+        -webkit-box-orient:vertical;
+        -webkit-line-clamp:3;
+        overflow:hidden;
+      }
+      .card-text {
+        display:-webkit-box;
+        -webkit-box-orient:vertical;
+        -webkit-line-clamp:4;
+        overflow:hidden;
+      }
+    }
+`;
+
 // ── Post-process: enforce color rules ───────────────────
 function postProcess(data: LandingPageData, businessInfo: BusinessInfo): LandingPageData {
   const wantsLight = /blanco|claro|crema|fondo claro|fondo blanco|fondo amarillo/i
@@ -172,8 +306,16 @@ function postProcess(data: LandingPageData, businessInfo: BusinessInfo): Landing
 }
 
 // ── Fill template ────────────────────────────────────────
+function escapeAttr(value: string | undefined): string {
+  return (value ?? '').replace(/"/g, '&quot;');
+}
+
 function fillTemplate(template: string, data: LandingPageData, images: string[] = []): string {
   let html = template;
+
+  const logoMarkup = data.logoImage
+    ? `<span class="nav-logo-img-wrap"><img src="${data.logoImage}" alt="${escapeAttr(data.logoAlt || data.name || 'Logo')}" loading="lazy" decoding="async"></span>`
+    : '';
 
   const simple: Record<string, string> = {
     '{{META_DESCRIPTION}}':   data.metaDescription    || '',
@@ -193,6 +335,7 @@ function fillTemplate(template: string, data: LandingPageData, images: string[] 
     '{{BTN_TEXT_COLOR}}':     data.btnText             || '#FFFFFF',
     '{{LOGO_P1}}':            data.logoP1              || '',
     '{{LOGO_P2}}':            data.logoP2              || '',
+    '{{LOGO_IMAGE}}':         logoMarkup,
     '{{NAV_1}}':              data.nav1                || '',
     '{{NAV_2}}':              data.nav2                || '',
     '{{NAV_3}}':              data.nav3                || '',
@@ -231,6 +374,10 @@ function fillTemplate(template: string, data: LandingPageData, images: string[] 
 
   for (const [key, val] of Object.entries(simple)) {
     html = html.replaceAll(key, val);
+  }
+
+  if (html.includes('</style>')) {
+    html = html.replace('</style>', `${RESPONSIVE_COPY_STYLES}\n  </style>`);
   }
 
   // Guarantee border-radius:50% on WhatsApp floating button
@@ -358,7 +505,7 @@ JSON REQUERIDO (responde SOLO esto, sin markdown):
 // ── POST handler ──────────────────────────────────────────
 export async function POST(req: Request) {
   try {
-    const { messages, images = [], forcedTemplate } = await req.json();
+    const { messages, images = [], forcedTemplate, logo } = await req.json();
 
     // 1. Extract business info (one AI call for extraction)
     let businessInfo: BusinessInfo;
@@ -396,6 +543,12 @@ export async function POST(req: Request) {
         { status: 500 }
       );
     }
+
+    parsedData = tightenCopy(parsedData);
+    if (typeof logo === 'string' && logo.trim().length > 0) {
+      parsedData.logoImage = logo;
+    }
+    parsedData.logoAlt = parsedData.logoAlt || businessInfo.name || parsedData.name || 'Logo';
 
     // 4. Post-process: enforce color rules & defaults
     parsedData = postProcess(parsedData, businessInfo);

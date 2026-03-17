@@ -10,6 +10,7 @@ Pregunta sobre estos temas UNO A LA VEZ:
 3. Diferenciador clave
 4. Colores: "¿Prefieres el fondo oscuro (moderno y elegante) o claro (blanco, amarillo, crema)?"
 5. Número de WhatsApp
+6. Antes de cerrar, pregunta: "¿Deseas agregar un logo a tu página? Puedes subirlo en el panel lateral." y registra su respuesta.
 
 Cuando tengas suficiente info (al menos nombre, industria y producto), termina EXACTAMENTE con:
 "¡Perfecto! Ya tengo todo lo que necesito. Generando tu landing page..."`;

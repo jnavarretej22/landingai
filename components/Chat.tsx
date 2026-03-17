@@ -4,6 +4,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import Image from 'next/image';
 import { Message } from '@/lib/types';
 import ImageUploader from './ImageUploader';
+import LogoUploader from './LogoUploader';
 
 const STORAGE_MESSAGES   = 'minegocio_messages';
 const STORAGE_IMG_URLS   = 'minegocio_image_urls';
@@ -15,7 +16,7 @@ interface UploadedImage {
 }
 
 interface ChatProps {
-  onGenerate: (messages: Message[], images: string[]) => void;
+  onGenerate: (messages: Message[], images: string[], logo?: string | null) => void;
   isGenerating: boolean;
   onImageUpload?: (url: string) => void;
 }
@@ -64,10 +65,16 @@ export default function Chat({ onGenerate, isGenerating, onImageUpload }: ChatPr
     } catch { return []; }
   });
   const [rateLimitTimer,  setRateLimitTimer]  = useState<number | null>(null);
+  const [logoDecision,    setLogoDecision]    = useState<'yes' | 'no' | null>(null);
+  const [logoImage,       setLogoImage]       = useState<UploadedImage | null>(null);
+  const [pendingAutoMsgs, setPendingAutoMsgs] = useState<Message[] | null>(null);
 
   const messagesEndRef  = useRef<HTMLDivElement>(null);
   const latestMessages  = useRef<Message[]>(messages);
   const abortRef        = useRef<AbortController | null>(null);
+
+  const isLogoStepSatisfied = logoDecision === 'no' || (logoDecision === 'yes' && Boolean(logoImage));
+  const waitingLogoAnswer = Boolean(pendingAutoMsgs && !isLogoStepSatisfied);
 
   // Keep ref in sync for use inside stream callbacks
   useEffect(() => { latestMessages.current = messages; }, [messages]);
@@ -100,6 +107,17 @@ export default function Chat({ onGenerate, isGenerating, onImageUpload }: ChatPr
     }
     if (rateLimitTimer === 0) setRateLimitTimer(null);
   }, [rateLimitTimer]);
+
+  useEffect(() => {
+    if (pendingAutoMsgs && isLogoStepSatisfied) {
+      onGenerate(
+        pendingAutoMsgs,
+        uploadedImages.map(i => i.base64),
+        logoImage?.base64 || null
+      );
+      setPendingAutoMsgs(null);
+    }
+  }, [pendingAutoMsgs, isLogoStepSatisfied, uploadedImages, logoImage, onGenerate]);
 
   const sendMessage = async (userContent: string, retryMsgs?: Message[]) => {
     if (isLoading) return;
@@ -182,11 +200,14 @@ export default function Chat({ onGenerate, isGenerating, onImageUpload }: ChatPr
 
             if (data.done) {
               setIsLoading(false);
-              if (data.isReady || detectReadySignal(finalMessages[finalMessages.length - 1]?.content ?? '')) {
-                onGenerate(
-                  finalMessages.filter(m => m.content !== ''), // remove empty placeholder if any
-                  uploadedImages.map(i => i.base64)
-                );
+              const isAssistantReady = data.isReady || detectReadySignal(finalMessages[finalMessages.length - 1]?.content ?? '');
+              if (isAssistantReady) {
+                const sanitized = finalMessages.filter(m => m.content !== '');
+                if (isLogoStepSatisfied) {
+                  onGenerate(sanitized, uploadedImages.map(i => i.base64), logoImage?.base64 || null);
+                } else {
+                  setPendingAutoMsgs(sanitized);
+                }
               }
             }
 
@@ -224,6 +245,37 @@ export default function Chat({ onGenerate, isGenerating, onImageUpload }: ChatPr
         : 'He subido una foto del negocio y se adjunta para el carrusel y la sección "Nosotros".',
     };
     setMessages(prev => [...prev, msg]);
+  };
+
+  const handleLogoChoice = (choice: 'yes' | 'no') => {
+    setLogoDecision(choice);
+    if (choice === 'no') {
+      setLogoImage(null);
+    }
+  };
+
+  const handleLogoUpload = (url: string, base64: string, isEphemeral?: boolean) => {
+    const logoPayload = { url, base64, isEphemeral };
+    setLogoImage(logoPayload);
+    setLogoDecision('yes');
+    const isPersistedFile = url.startsWith('/uploads/') && !isEphemeral;
+    if (isPersistedFile) {
+      onImageUpload?.(url);
+    }
+    setMessages(prev => [...prev, {
+      role: 'user',
+      content: 'Acabo de subir el logo de mi marca. Úsalo en el encabezado y donde aporte credibilidad.',
+    }]);
+  };
+
+  const clearLogo = () => {
+    setLogoImage(null);
+  };
+
+  const handleManualGenerate = () => {
+    if (!isLogoStepSatisfied) return;
+    const sanitized = messages.filter(m => m.content !== '');
+    onGenerate(sanitized, uploadedImages.map(i => i.base64), logoImage?.base64 || null);
   };
 
   return (
@@ -285,6 +337,49 @@ export default function Chat({ onGenerate, isGenerating, onImageUpload }: ChatPr
 
       {/* Input area */}
       <div className="p-4 border-t border-gray-100 space-y-3 bg-gray-50 rounded-b-lg">
+        <div className="bg-white border border-gray-200 rounded-lg p-3 shadow-inner space-y-3">
+          <div className="flex items-start justify-between gap-2">
+            <div>
+              <p className="text-[11px] uppercase tracking-wide text-gray-400 font-semibold">Identidad visual</p>
+              <p className="text-sm font-semibold text-gray-800">¿Deseas agregar un logo a tu página?</p>
+              <p className="text-[11px] text-gray-500">Lo mostraremos en el header para reforzar tu marca.</p>
+            </div>
+            {waitingLogoAnswer && (
+              <span className="text-[11px] font-semibold text-amber-600">Responde para continuar</span>
+            )}
+          </div>
+          <div className="flex gap-2">
+            {(['yes', 'no'] as const).map(option => (
+              <button
+                key={option}
+                type="button"
+                onClick={() => handleLogoChoice(option)}
+                className={`flex-1 px-3 py-2 rounded-lg border text-sm font-semibold transition-colors ${
+                  logoDecision === option
+                    ? option === 'yes'
+                      ? 'bg-emerald-100 text-emerald-700 border-emerald-200'
+                      : 'bg-gray-200 text-gray-700 border-gray-300'
+                    : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300'
+                }`}
+                disabled={isGenerating}
+              >
+                {option === 'yes' ? 'Sí, agregar logo' : 'No por ahora'}
+              </button>
+            ))}
+          </div>
+          {logoDecision === 'yes' && (
+            <LogoUploader
+              onUploadSuccess={handleLogoUpload}
+              onRemove={clearLogo}
+              preview={logoImage}
+              disabled={isGenerating || isLoading}
+            />
+          )}
+          {logoDecision === 'no' && (
+            <p className="text-[11px] text-gray-500">Puedes activarlo más tarde si consigues el archivo.</p>
+          )}
+        </div>
+
         <ImageUploader onUploadSuccess={handleUploadSuccess} />
 
         {uploadedImages.length > 0 && (
@@ -328,8 +423,8 @@ export default function Chat({ onGenerate, isGenerating, onImageUpload }: ChatPr
         </div>
 
         <button
-          onClick={() => onGenerate(messages, uploadedImages.map(i => i.base64))}
-          disabled={isGenerating || messages.length < 2 || isLoading}
+          onClick={handleManualGenerate}
+          disabled={isGenerating || messages.length < 2 || isLoading || !isLogoStepSatisfied}
           className="w-full bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white font-bold py-3 rounded-lg transition-all shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {isGenerating ? '⏳ Generando diseño...' : '✨ Generar mi Landing Page'}
