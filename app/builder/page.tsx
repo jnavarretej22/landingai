@@ -24,6 +24,8 @@ export default function BuilderPage() {
   const [selectedTemplate,  setSelectedTemplate]  = useState<TemplateStyle | 'ai' | null>(null);
   const [showPreviewMobile, setShowPreviewMobile] = useState(false);
   const [toolbarOpen,       setToolbarOpen]       = useState(false);
+  const [autoOpenBlocked,  setAutoOpenBlocked]   = useState(false);
+  const [previewUrl,        setPreviewUrl]        = useState<string | null>(null);
   // Track uploaded image URLs for server-side cleanup
   const [uploadedUrls,      setUploadedUrls]      = useState<string[]>([]);
 
@@ -67,6 +69,13 @@ export default function BuilderPage() {
 
   // ── Generate handler ──────────────────────────────────
   const handleGenerate = useCallback(async (messages: Message[], images: string[] = [], logo?: string | null) => {
+    // Clean up previous preview URL
+    setAutoOpenBlocked(false);
+    if (previewUrl) {
+      URL.revokeObjectURL(previewUrl);
+      setPreviewUrl(null);
+    }
+
     setIsGenerating(true);
     try {
       const res  = await fetch('/api/generate', {
@@ -84,6 +93,20 @@ export default function BuilderPage() {
 
       if (res.ok && data.html) {
         setHtml(data.html);
+
+        // Auto-open generated page in new tab
+        const blob = new Blob([data.html], { type: 'text/html;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const newTab = window.open(url, '_blank');
+
+        if (!newTab || newTab.closed) {
+          // Fallback: popup blocked
+          setAutoOpenBlocked(true);
+          setPreviewUrl(url);
+        }
+
+        // Revoke URL after 5 minutes to free memory
+        setTimeout(() => URL.revokeObjectURL(url), 5 * 60 * 1000);
       } else {
         const ERR_MSGS: Record<string, string> = {
           rate_limit:     '⚠️ Servicio saturado. Espera un minuto e intenta de nuevo.',
@@ -97,7 +120,7 @@ export default function BuilderPage() {
     } finally {
       setIsGenerating(false);
     }
-  }, [selectedTemplate]);
+  }, [selectedTemplate, previewUrl]);
 
   // ── "Nuevo proyecto" ──────────────────────────────────
   const handleNewProject = useCallback(() => {
@@ -244,6 +267,21 @@ export default function BuilderPage() {
             <div className="flex-1 overflow-hidden bg-white">
               <PreviewFrame html={html} isGenerating={isGenerating} />
             </div>
+            {autoOpenBlocked && previewUrl && (
+              <div className="px-4 py-3 bg-amber-50 border-t border-amber-200">
+                <a
+                  href={previewUrl}
+                  target="_blank"
+                  rel="noopener"
+                  className="flex items-center justify-center gap-2 w-full bg-amber-500 hover:bg-amber-600 text-white font-semibold text-sm py-2.5 px-4 rounded-lg shadow transition"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                  </svg>
+                  Ver mi página en nueva pestaña →
+                </a>
+              </div>
+            )}
           </div>
         </div>
         {showPreviewMobile && (
@@ -259,6 +297,21 @@ export default function BuilderPage() {
                   Cerrar ✕
                 </button>
               </div>
+              {autoOpenBlocked && previewUrl && (
+                <div className="px-4 py-2 bg-amber-50 border-b border-amber-200">
+                  <a
+                    href={previewUrl}
+                    target="_blank"
+                    rel="noopener"
+                    className="flex items-center justify-center gap-2 w-full bg-amber-500 hover:bg-amber-600 text-white font-semibold text-sm py-2.5 px-4 rounded-lg shadow transition"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                    </svg>
+                    Ver mi página en nueva pestaña →
+                  </a>
+                </div>
+              )}
               <div className="flex-1 overflow-hidden bg-white">
                 <PreviewFrame html={html} isGenerating={isGenerating} />
               </div>
@@ -316,6 +369,19 @@ export default function BuilderPage() {
                 >
                   Visualizar página
                 </button>
+                {autoOpenBlocked && previewUrl && (
+                  <a
+                    href={previewUrl}
+                    target="_blank"
+                    rel="noopener"
+                    className="w-full flex items-center justify-center gap-2 bg-amber-500 hover:bg-amber-600 text-white font-semibold text-base px-4 py-3 rounded-xl"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                    </svg>
+                    Ver mi página en nueva pestaña
+                  </a>
+                )}
                 <button
                   onClick={() => setToolbarOpen(false)}
                   className="w-full text-white/70 text-sm mt-2"
