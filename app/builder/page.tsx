@@ -267,21 +267,6 @@ export default function BuilderPage() {
             <div className="flex-1 overflow-hidden bg-white">
               <PreviewFrame html={html} isGenerating={isGenerating} />
             </div>
-            {autoOpenBlocked && previewUrl && (
-              <div className="px-4 py-3 bg-amber-50 border-t border-amber-200">
-                <a
-                  href={previewUrl}
-                  target="_blank"
-                  rel="noopener"
-                  className="flex items-center justify-center gap-2 w-full bg-amber-500 hover:bg-amber-600 text-white font-semibold text-sm py-2.5 px-4 rounded-lg shadow transition"
-                >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                  </svg>
-                  Ver mi página en nueva pestaña →
-                </a>
-              </div>
-            )}
           </div>
         </div>
         {showPreviewMobile && (
