@@ -94,19 +94,20 @@ export default function BuilderPage() {
       if (res.ok && data.html) {
         setHtml(data.html);
 
-        // Auto-open generated page in new tab
-        const blob = new Blob([data.html], { type: 'text/html;charset=utf-8' });
-        const url = URL.createObjectURL(blob);
-        const newTab = window.open(url, '_blank');
+        // Auto-open generated page in new tab (mobile only)
+        const isMobile = window.innerWidth < 1024;
+        if (isMobile) {
+          const blob = new Blob([data.html], { type: 'text/html;charset=utf-8' });
+          const url = URL.createObjectURL(blob);
+          const newTab = window.open(url, '_blank');
 
-        if (!newTab || newTab.closed) {
-          // Fallback: popup blocked
-          setAutoOpenBlocked(true);
-          setPreviewUrl(url);
+          if (!newTab || newTab.closed) {
+            setAutoOpenBlocked(true);
+            setPreviewUrl(url);
+          }
+
+          setTimeout(() => URL.revokeObjectURL(url), 5 * 60 * 1000);
         }
-
-        // Revoke URL after 5 minutes to free memory
-        setTimeout(() => URL.revokeObjectURL(url), 5 * 60 * 1000);
       } else {
         const ERR_MSGS: Record<string, string> = {
           rate_limit:     '⚠️ Servicio saturado. Espera un minuto e intenta de nuevo.',
