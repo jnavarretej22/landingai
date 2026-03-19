@@ -47,7 +47,7 @@ const ERROR_MESSAGES: Record<string, string> = {
 
 export default function Chat({ onGenerate, isGenerating, onImageUpload }: ChatProps) {
   const INITIAL_MSG: Message[] = [
-    { role: 'assistant', content: '¡Hola! Soy el asistente de MiNegocioDigital. Voy a ayudarte a crear la página web de tu negocio. ¿Cuál es el nombre de tu negocio?' },
+    { role: 'assistant', content: '{"message": "¡Hola! Para crear tu página web perfecta, primero dime: ¿de qué tipo es tu negocio?", "options": ["🍽️ Restaurante / Comida preparada", "🍗 Alitas / Pollo / Fast food", "🥩 Carnicería / Venta de carnes", "🌽 Agrícola / Productos del campo", "🐾 Mascotas / Veterinaria / Pet shop", "👗 Ropa / Moda / Boutique", "👟 Zapatos / Calzado", "💅 Salón / Spa / Belleza", "💻 Tecnología / Reparación", "🎂 Panadería / Pastelería", "💪 Gimnasio / Fitness", "🔨 Ferretería / Construcción", "💊 Farmacia / Salud", "🏢 Servicios profesionales", "✨ Otro tipo de negocio"]}' },
   ];
 
   const [messages, setMessages] = useState<Message[]>(() => {
@@ -72,6 +72,18 @@ const [logoImage,       setLogoImage]       = useState<UploadedImage | null>(nul
 const [pendingAutoMsgs, setPendingAutoMsgs] = useState<Message[] | null>(null);
 const [showImageUploader, setShowImageUploader] = useState(false);
 const [showLogoUploader,  setShowLogoUploader]  = useState(false);
+const [optionSelected,   setOptionSelected]    = useState<Record<string, string>>({});
+
+function parseAIMessage(content: string): { text: string; options?: string[] } {
+  try {
+    const clean = content.replace(/```json|```/g, '').trim();
+    const parsed = JSON.parse(clean);
+    if (parsed.message && Array.isArray(parsed.options)) {
+      return { text: parsed.message, options: parsed.options };
+    }
+  } catch { }
+  return { text: content, options: undefined };
+}
 
 const isLogoStepSatisfied = logoDecision === 'no' || (logoDecision === 'yes' && Boolean(logoImage));
 
@@ -106,15 +118,21 @@ const handleManualGenerate = useCallback(() => {
   const messagesEndRef  = useRef<HTMLDivElement>(null);
   const latestMessages  = useRef<Message[]>(messages);
   const abortRef        = useRef<AbortController | null>(null);
+  // Token batching: accumulate tokens in ref, flush to state every 60ms
+  const tokenBuffer     = useRef<string>('');
+  const flushTimer      = useRef<ReturnType<typeof setInterval> | null>(null);
+  const isStreamingRef  = useRef(false);
 
   // Keep ref in sync for use inside stream callbacks
   useEffect(() => { latestMessages.current = messages; }, [messages]);
 
-  // Persist messages to sessionStorage on every change
+  // Persist messages to sessionStorage — ONLY when not streaming (avoids writing on every token)
+  const streamingRef = isStreamingRef;
   useEffect(() => {
+    if (streamingRef.current) return; // skip during active streaming
     try { sessionStorage.setItem(STORAGE_MESSAGES, JSON.stringify(messages)); }
     catch { }
-  }, [messages]);
+  }, [messages, streamingRef]);
 
   // Persist uploaded image URLs (not base64) on every change
   useEffect(() => {
@@ -129,6 +147,49 @@ const handleManualGenerate = useCallback(() => {
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
+
+  // Start batched flush when streaming begins
+  const startTokenFlush = useCallback(() => {
+    isStreamingRef.current = true;
+    if (flushTimer.current) return;
+    flushTimer.current = setInterval(() => {
+      const buffered = tokenBuffer.current;
+      if (!buffered) return;
+      tokenBuffer.current = '';
+      setMessages(prev => {
+        const updated = [...prev];
+        updated[updated.length - 1] = {
+          ...updated[updated.length - 1],
+          content: updated[updated.length - 1].content + buffered,
+        };
+        latestMessages.current = updated;
+        return updated;
+      });
+    }, 60);
+  }, []);
+
+  const stopTokenFlush = useCallback((finalMessages: Message[]) => {
+    if (flushTimer.current) {
+      clearInterval(flushTimer.current);
+      flushTimer.current = null;
+    }
+    // Flush any remaining buffered tokens
+    const remaining = tokenBuffer.current;
+    tokenBuffer.current = '';
+    isStreamingRef.current = false;
+    if (remaining) {
+      setMessages(prev => {
+        const updated = [...prev];
+        updated[updated.length - 1] = {
+          ...updated[updated.length - 1],
+          content: updated[updated.length - 1].content + remaining,
+        };
+        return updated;
+      });
+    }
+    // Persist to sessionStorage after streaming ends
+    try { sessionStorage.setItem(STORAGE_MESSAGES, JSON.stringify(finalMessages)); } catch { }
+  }, []);
 
   // Rate limit countdown
   useEffect(() => {
@@ -157,27 +218,30 @@ const handleManualGenerate = useCallback(() => {
     abortRef.current?.abort();
     abortRef.current = new AbortController();
 
-    // Build message list for the API call
+    // Build message list — cap at last 12 msgs to keep payload small
     const baseMessages: Message[] = retryMsgs ?? [
       ...latestMessages.current,
       { role: 'user', content: userContent },
     ];
 
     // Optimistically add user msg + empty assistant placeholder
-    if (!retryMsgs) {
-      setMessages([...baseMessages, { role: 'assistant', content: '' }]);
-    } else {
-      setMessages([...baseMessages, { role: 'assistant', content: '' }]);
-    }
+    setMessages([...baseMessages, { role: 'assistant', content: '' }]);
 
     setIsLoading(true);
     setInput('');
+
+    // Reset token buffer & start batched flush interval
+    tokenBuffer.current = '';
+    startTokenFlush();
+
+    let finalMessages = [...baseMessages, { role: 'assistant' as const, content: '' }];
 
     try {
       const res = await fetch('/api/chat', {
         method:  'POST',
         headers: { 'Content-Type': 'application/json' },
-        body:    JSON.stringify({ messages: baseMessages }),
+        // Only send last 12 messages to keep payload small
+        body:    JSON.stringify({ messages: baseMessages.slice(-12) }),
         signal:  abortRef.current.signal,
       });
 
@@ -188,7 +252,6 @@ const handleManualGenerate = useCallback(() => {
       const reader  = res.body.getReader();
       const decoder = new TextDecoder();
       let buffer    = '';
-      let finalMessages = [...baseMessages, { role: 'assistant' as const, content: '' }];
 
       while (true) {
         const { done, value } = await reader.read();
@@ -204,22 +267,15 @@ const handleManualGenerate = useCallback(() => {
             const data = JSON.parse(line.slice(6));
 
             if (data.token) {
-              // Append token to last assistant message in real time
-              setMessages(prev => {
-                const updated = [...prev];
-                updated[updated.length - 1] = {
-                  ...updated[updated.length - 1],
-                  content: updated[updated.length - 1].content + data.token,
-                };
-                finalMessages = updated;
-                return updated;
-              });
+              // Accumulate token in buffer — flush timer will batch into setState
+              tokenBuffer.current += data.token;
             }
 
             if (data.error) {
               const code = data.code || 'parse_error';
               if (code === 'rate_limit') setRateLimitTimer(60);
               const errText = ERROR_MESSAGES[code] || data.error;
+              stopTokenFlush(finalMessages);
               setMessages(prev => {
                 const updated = [...prev];
                 updated[updated.length - 1] = { role: 'assistant', content: errText };
@@ -230,8 +286,15 @@ const handleManualGenerate = useCallback(() => {
             }
 
             if (data.done) {
+              // Stop batching and flush remaining buffer
+              stopTokenFlush(finalMessages);
+              // Give React one tick to render final flush before reading state
+              await new Promise(r => setTimeout(r, 80));
+              setMessages(prev => { finalMessages = prev; return prev; });
+              await new Promise(r => setTimeout(r, 20));
               setIsLoading(false);
-              const isAssistantReady = data.isReady || detectReadySignal(finalMessages[finalMessages.length - 1]?.content ?? '');
+              const lastContent = finalMessages[finalMessages.length - 1]?.content ?? '';
+              const isAssistantReady = data.isReady || detectReadySignal(lastContent);
               if (isAssistantReady) {
                 const sanitized = finalMessages.filter(m => m.content !== '');
                 if (isLogoStepSatisfied) {
@@ -247,8 +310,9 @@ const handleManualGenerate = useCallback(() => {
       }
 
     } catch (err: unknown) {
-      if ((err as Error).name === 'AbortError') return; // cancelled intentionally
+      if ((err as Error).name === 'AbortError') { stopTokenFlush(finalMessages); return; }
       console.error('Chat fetch error:', (err as Error)?.message);
+      stopTokenFlush(finalMessages);
       setMessages(prev => {
         const updated = [...prev];
         updated[updated.length - 1] = { role: 'assistant', content: '❌ Error de red. Verifica tu conexión.' };
@@ -301,6 +365,11 @@ const handleManualGenerate = useCallback(() => {
 
   const clearLogo = () => {
     setLogoImage(null);
+  };
+
+  const handleOptionSelect = (messageId: string, option: string) => {
+    setOptionSelected(prev => ({ ...prev, [messageId]: option }));
+    sendMessage(option);
   };
 
   return (
@@ -388,6 +457,10 @@ const handleManualGenerate = useCallback(() => {
           const isStreaming     = isLast && m.role === 'assistant' && isLoading;
           const showTypingDots  = isLast && m.role === 'assistant' && isLoading && m.content === '';
           const isUser          = m.role === 'user';
+          const parsed          = isUser ? null : parseAIMessage(m.content);
+          const hasOptions      = parsed?.options && parsed.options.length > 0;
+          const isSelected      = Boolean(optionSelected[`${i}`]);
+          const isStreamingComplete = !isStreaming && !isLoading && m.content !== '' && !showTypingDots;
 
           return (
             <div key={i} className={`flex ${isUser ? 'justify-end' : 'justify-start'}`}>
@@ -415,12 +488,34 @@ const handleManualGenerate = useCallback(() => {
                       ))}
                     </div>
                   ) : (
-                    <p className="chat-bubble-text text-sm whitespace-pre-wrap">
-                      {m.content}
-                      {isStreaming && m.content !== '' && (
-                        <span className="inline-block w-0.5 h-4 bg-gray-500 ml-0.5 animate-pulse align-middle" />
+                    <>
+                      <p className="chat-bubble-text text-sm whitespace-pre-wrap">
+                        {isUser ? m.content : (parsed?.text ?? m.content)}
+                        {isStreaming && m.content !== '' && (
+                          <span className="inline-block w-0.5 h-4 bg-gray-500 ml-0.5 animate-pulse align-middle" />
+                        )}
+                      </p>
+                      {hasOptions && isStreamingComplete && !isSelected && (
+                        <div className="options-grid">
+                          {parsed.options!.map((option, j) => (
+                            <button
+                              key={j}
+                              type="button"
+                              className="option-btn"
+                              onClick={() => handleOptionSelect(`${i}`, option)}
+                              disabled={isLoading || isGenerating}
+                            >
+                              {option}
+                            </button>
+                          ))}
+                        </div>
                       )}
-                    </p>
+                      {isSelected && (
+                        <div className="selected-option-pill">
+                          ✓ {optionSelected[`${i}`]}
+                        </div>
+                      )}
+                    </>
                   )}
                 </div>
               </div>

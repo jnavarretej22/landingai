@@ -26,6 +26,7 @@ export default function BuilderPage() {
   const [toolbarOpen,       setToolbarOpen]       = useState(false);
   const [autoOpenBlocked,  setAutoOpenBlocked]   = useState(false);
   const [previewUrl,        setPreviewUrl]        = useState<string | null>(null);
+  const [businessName,      setBusinessName]      = useState<string>('');
   // Track uploaded image URLs for server-side cleanup
   const [uploadedUrls,      setUploadedUrls]      = useState<string[]>([]);
 
@@ -93,6 +94,13 @@ export default function BuilderPage() {
 
       if (res.ok && data.html) {
         setHtml(data.html);
+
+        // Extract business name from HTML
+        const nameMatch = data.html.match(/BUSINESS_NAME\s*=\s*["']([^"']+)["']|class="nav-logo"[^>]*>([^<]+)/i);
+        if (nameMatch) {
+          const extractedName = (nameMatch[1] || nameMatch[2] || '').trim().replace(/<[^>]+>/g, '').trim();
+          if (extractedName) setBusinessName(extractedName);
+        }
 
         // Auto-open generated page in new tab (mobile only)
         const isMobile = window.innerWidth < 1024;
@@ -179,6 +187,7 @@ export default function BuilderPage() {
           <div className="w-full md:w-auto flex justify-center">
             <DownloadButton
               html={html}
+              businessName={businessName}
               uploadedUrls={uploadedUrls}
               onCleaned={() => setUploadedUrls([])}
             />
@@ -319,6 +328,7 @@ export default function BuilderPage() {
                 <div className="mobile-toolbar-download w-full">
                   <DownloadButton
                     html={html}
+                    businessName={businessName}
                     uploadedUrls={uploadedUrls}
                     onCleaned={() => setUploadedUrls([])}
                   />

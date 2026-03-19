@@ -4,7 +4,7 @@ const USE_OLLAMA  = process.env.USE_OLLAMA  === 'true';
 const OLLAMA_URL  = process.env.OLLAMA_URL  || 'http://localhost:11434';
 const GROQ_API_KEY = process.env.GROQ_API_KEY;
 
-const GROQ_CHAT_MODELS = ['llama-3.3-70b-versatile', 'llama-3.1-8b-instant', 'gemma2-9b-it'];
+const GROQ_CHAT_MODELS = ['llama-3.1-8b-instant', 'llama-3.3-70b-versatile', 'gemma2-9b-it'];
 const GROQ_CODE_MODELS = ['llama-3.3-70b-versatile', 'llama-3.1-8b-instant', 'gemma2-9b-it'];
 
 // ── Timeout helper ───────────────────────────────────────

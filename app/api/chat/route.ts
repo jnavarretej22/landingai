@@ -72,7 +72,7 @@ export async function POST(req: Request) {
         } else {
           // ── Groq streaming (with model fallback) ─────────
           const groq   = new Groq({ apiKey: process.env.GROQ_API_KEY });
-          const models = ['llama-3.3-70b-versatile', 'llama-3.1-8b-instant', 'gemma2-9b-it'];
+          const models = ['llama-3.1-8b-instant', 'llama-3.3-70b-versatile', 'gemma2-9b-it'];
 
           let succeeded = false;
 

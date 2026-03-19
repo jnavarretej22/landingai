@@ -3,6 +3,7 @@ import { readFileSync } from 'fs';
 import { join } from 'path';
 import { callGenerateAI } from '@/lib/ai-client';
 import { extractBusinessInfo } from '@/lib/prompts';
+import { getSectorHero } from '@/lib/sectors';
 
 interface LandingPageData {
   metaDescription?: string;
@@ -68,6 +69,7 @@ interface BusinessInfo {
   name?: string;
   industry?: string;
   product?: string;
+  sector?: string;
   audience?: string;
   differentiator?: string;
   bgColor?: string;
@@ -106,7 +108,7 @@ function isLightColor(hex: string | undefined): boolean {
 
 const DARK_PALETTES: Record<string, string> = {
   comida:      '#0A0800', bebidas: '#0A0800', restaurante: '#0A0700',
-  moda:        '#080808', ropa:    '#080808',
+  moda:        '#080808', ropa:    '#080808', zapatos: '#080808', nike: '#080808', calzado: '#080808',
   tecnologia:  '#050510', tech:    '#050510', app: '#050510',
   salud:       '#06100A', belleza: '#06100A', spa: '#0F0A07',
   fitness:     '#060606', deporte: '#060606',
@@ -310,7 +312,7 @@ function escapeAttr(value: string | undefined): string {
   return (value ?? '').replace(/"/g, '&quot;');
 }
 
-function fillTemplate(template: string, data: LandingPageData, images: string[] = []): string {
+function fillTemplate(template: string, data: LandingPageData, businessInfo: BusinessInfo, images: string[] = []): string {
   let html = template;
 
   const logoMarkup = data.logoImage
@@ -448,58 +450,95 @@ function fillTemplate(template: string, data: LandingPageData, images: string[] 
     });
   }
 
+  // Ensure business name is set from businessInfo
+  const businessNameFallback = businessInfo.name || '';
+  const logoP1Fallback = data.logoP1 || (businessNameFallback.split(' ')[0]) || 'Mi';
+  const logoP2Fallback = data.logoP2 || (businessNameFallback.split(' ').slice(1).join(' ')) || 'Negocio';
+  
+  // Final fallbacks
+  html = html.replaceAll('{{LOGO_P1}}', data.logoP1 || logoP1Fallback);
+  html = html.replaceAll('{{LOGO_P2}}', data.logoP2 || logoP2Fallback);
+  html = html.replaceAll('{{FOOTER_LOGO_P1}}', data.footerLogoP1 || data.logoP1 || '');
+  html = html.replaceAll('{{FOOTER_LOGO_P2}}', data.footerLogoP2 || data.logoP2 || '');
+  html = html.replaceAll('{{BUSINESS_NAME}}', data.name || businessNameFallback);
+  html = html.replaceAll('{{WHATSAPP_NUMBER}}', data.whatsapp || businessInfo.whatsapp || '0000000000');
+  html = html.replaceAll('PHONENUMBER', data.whatsapp || businessInfo.whatsapp || '0000000000');
+
+  // Strip ANY remaining placeholders that were not provided by the AI structure or static data
+  html = html.replace(/{{[A-Z0-9_]+}}/g, '');
+
   return html;
 }
 
-// ── Generation prompt (compact, ~550 tokens) ─────────────
-function buildPrompt(businessInfo: BusinessInfo, hasImages: boolean): string {
-  return `Eres un experto en diseño web. Genera SOLO JSON válido para una landing page.
+// ── Color palette mapper ───────────────────────────────────────────
+function mapColorsToCSS(colors: string | undefined, style: string | undefined): { bg: string; accent: string; accent2: string } {
+  const isDark = style !== 'claro' && style !== 'organico';
+  switch (colors) {
+    case 'negro_dorado':    return { bg: '#0A0800', accent: '#C9A84C', accent2: '#F5E27A' };
+    case 'blanco_amarillo': return { bg: '#FFFDF0', accent: '#F5C400', accent2: '#FFE566' };
+    case 'azul_blanco':     return { bg: isDark ? '#050A1A' : '#F0F4FF', accent: '#2563EB', accent2: '#60A5FA' };
+    case 'negro_llamativo': return { bg: '#080808', accent: '#FF4D00', accent2: '#FF8C42' };
+    default:                return { bg: isDark ? '#080808' : '#FFFDF0', accent: '#FF4D00', accent2: '#FF8C42' };
+  }
+}
 
-NEGOCIO:
+function mapStyleToTemplate(style: string | undefined, colors: string | undefined): string {
+  switch (style) {
+    case 'neon':     return 'neon';
+    case 'organico': return 'organic';
+    case 'brutal':   return 'brutal';
+    case 'claro':    return colors === 'azul_blanco' ? 'editorial' : 'default';
+    case 'oscuro':   return colors === 'negro_dorado' ? 'glass' : 'default';
+    default:         return 'glass';
+  }
+}
+
+type ExtBusinessInfo = BusinessInfo & { style?: string; colors?: string; tone?: string; differentiator?: string; cta?: string };
+
+// ── Generation prompt — rich context from user conversation ──
+function buildPrompt(businessInfo: ExtBusinessInfo, hasImages: boolean): string {
+  const palette = mapColorsToCSS(businessInfo.colors, businessInfo.style);
+  const suggestedTemplate = mapStyleToTemplate(businessInfo.style, businessInfo.colors);
+  const nameParts = (businessInfo.name || 'Mi Negocio').split(' ');
+  const logoP1 = nameParts[0] || 'Mi';
+  const logoP2 = nameParts.slice(1).join(' ') || 'Negocio';
+  const productHint = businessInfo.product
+    ? `El negocio ofrece: ${businessInfo.product}. Usa nombres REALES de productos/servicios en las cards.`
+    : 'Deduce 3 productos o servicios principales basados en la industria.';
+  const toneGuide: Record<string, string> = {
+    formal:   'Usa lenguaje formal y profesional.',
+    amigable: 'Usa lenguaje cercano y amigable.',
+    juvenil:  'Usa lenguaje dinámico, moderno y energético.',
+    elegante: 'Usa lenguaje sofisticado y exclusivo.',
+  };
+  const toneInstruction = toneGuide[businessInfo.tone || ''] || 'Usa lenguaje profesional y directo.';
+
+  return `Responde SOLO con JSON válido. No escribas texto antes ni después.
+
+DATOS DEL NEGOCIO:
 - Nombre: ${businessInfo.name || 'Sin nombre'}
 - Industria: ${businessInfo.industry || 'General'}
-- Producto: ${businessInfo.product || ''}
-- Audiencia: ${businessInfo.audience || ''}
-- Diferenciador: ${businessInfo.differentiator || ''}
-- Fondo pedido: ${businessInfo.bgColor || 'no especificado'}
-- Acento pedido: ${businessInfo.accentColor || 'no especificado'}
-- Colores: ${businessInfo.colors || 'según industria'}
+- Producto/Servicio: ${businessInfo.product || 'No especificado'}
+- Diferenciador clave: ${businessInfo.differentiator || 'No especificado'}
+- Tono elegido: ${businessInfo.tone || 'profesional'}
+- Colores preferidos: ${businessInfo.colors || 'ia_elige'}
+- Estilo visual: ${businessInfo.style || 'oscuro'}
+- Tipo de contacto: ${businessInfo.cta || 'whatsapp'}
 - WhatsApp: ${businessInfo.whatsapp || '0000000000'}
-- Tono: ${businessInfo.tone || 'profesional'}
-${hasImages ? '- El cliente subió fotos propias para el carrusel.' : '- Sin imágenes: usar Unsplash como respaldo.'}
+${hasImages ? '- El usuario subíó fotos reales del negocio para el carrusel.' : ''}
 
-COLORES — PRIORIDAD MÁXIMA:
-Si "Fondo pedido" es claro (blanco/crema/amarillo claro) → MODO CLARO: bg claro, textColor:#1A1A1A, mutedColor:rgba(0,0,0,0.5), navSolidBg:rgba(255,255,255,0.95)
-Si no → MODO OSCURO (default): bg muy oscuro, textColor:#FFFFFF, mutedColor:rgba(255,255,255,0.5), navSolidBg:rgba(5,5,5,0.92)
-IMPORTANTE: "Acento pedido" es para botones/destaques, NO cambia el modo del fondo.
+COLORES SUGERIDOS (basados en su elección):
+bg="${palette.bg}" accent="${palette.accent}" accent2="${palette.accent2}" templateStyle="${suggestedTemplate}"
 
-PALETAS OSCURAS:
-comida:#0A0800 moda:#080808 tech:#050510 salud:#06100A fitness:#060606 restaurante:#0A0700
+INSTRUCCIONES:
+1. ${productHint}
+2. aboutText: describe el negocio brevemente. ${toneInstruction} Máx 2 oraciones. Menciona diferenciador si existe.
+3. Las cards DEBEN tener titles y texts específicos para ESTE negocio (no genéricos).
+4. stat1num/stat2num/stat3num: usa números relevantes del negocio (años de experiencia, clientes, etc.) si los mencionó el usuario. Si no, usa valores simbólicos como "5+", "100%", "24h".
+5. Usa EXACTAMENTE los colores sugeridos a menos que contradigan claramente el estilo.
 
-PALETAS CLARAS:
-blanco+amarillo: bg:#FFFDF0 surface:#FFFFFF accent:#F5C400
-blanco puro:     bg:#FFFFFF surface:#F8F8F8 accent:#222222
-crema+naranja:   bg:#FFF8F0 surface:#FFFFFF accent:#FF6B00
-
-TEMPLATE (campo "templateStyle"):
-glass→tech/apps/foto | brutal→moda urbana/música/tattoo | editorial→abogados/coaches/finanzas
-neon→gaming/crypto/clubs | organic→spa/comida natural/flores | default→delivery/zapatos/tiendas
-
-IMÁGENES Unsplash: "https://images.unsplash.com/photo-{ID}?w=800&q=80" — NUNCA source.unsplash.com
-
-HERO TEXT — MUY IMPORTANTE:
-El hero usa tipografía gigante (clamp 52px–110px). Textos largos se deforman y ocupan toda la pantalla.
-REGLAS ESTRICTAS para heroLine1/2/3:
-- heroLine1: máx 4 palabras. Ejemplo: "Pan Fresco" / "Tu Tienda Online" / "Diseño Que Impacta"
-- heroLine2: máx 3 palabras. Ejemplo: "Hecho con Amor" / "Para Ti" / "Sin Límites"
-- heroLine3: máx 4 palabras. Sólo slogan corto o vacío "". Ejemplo: "Calidad Garantizada" / ""
-- heroSubtitle: SÍ puede ser frase completa (font pequeño). Ej: "Encuentra el par perfecto para cada ocasión."
-- heroEyebrow: máx 4 palabras en mayúsculas. Ej: "// Bienvenido a Geenra"
-❌ PROHIBIDO en heroLine1/2/3: frases de más de 4 palabras, oraciones completas, proposiciones largas.
-✅ CORRECTO: palabras de impacto, sustantivos, verbos solos, adjetivos directos.
-
-JSON REQUERIDO (responde SOLO esto, sin markdown):
-{"bg":"#...","surface":"#...","surface2":"#...","accent":"#...","accent2":"#...","templateStyle":"default","textColor":"#FFFFFF","mutedColor":"rgba(255,255,255,0.5)","navSolidBg":"rgba(5,5,5,0.92)","btnText":"#fff","displayFont":"Syne","bodyFont":"DM Sans","logoP1":"","logoP2":"","nav1":"","nav2":"","nav3":"","navCta":"","heroEyebrow":"","heroLine1":"","heroLine2":"","heroLine3":"","heroSubtitle":"","ctaPrimary":"","ctaSecondary":"","stat1num":"","stat1lbl":"","stat2num":"","stat2lbl":"","stat3num":"","stat3lbl":"","carouselTag":"","carouselTitle":"","slides":[{"url":"","alt":""},{"url":"","alt":""},{"url":"","alt":""},{"url":"","alt":""},{"url":"","alt":""}],"productsTag":"","productsTitle":"","productsSub":"","cards":[{"icon":"🔥","title":"","text":"","price":""},{"icon":"⭐","title":"","text":"","price":""},{"icon":"💎","title":"","text":"","price":""}],"aboutTag":"","aboutTitle":"","aboutText":"","aboutCta":"","aboutImage":"","businessInitials":"XX","testimonials":[{"stars":"★★★★★","text":"","initials":"XX","name":"","role":""},{"stars":"★★★★★","text":"","initials":"XX","name":"","role":""},{"stars":"★★★★★","text":"","initials":"XX","name":"","role":""},{"stars":"★★★★☆","text":"","initials":"XX","name":"","role":""}],"ctaTitle":"","ctaSubtitle":"","footerLogoP1":"","footerLogoP2":"","footerDesc":"","metaDescription":"","metaKeywords":"","businessTagline":""}`;
+JSON completo:
+{"bg":"${palette.bg}","accent":"${palette.accent}","accent2":"${palette.accent2}","templateStyle":"${suggestedTemplate}","logoP1":"${logoP1}","logoP2":"${logoP2}","whatsapp":"${businessInfo.whatsapp || '0000000000'}","aboutText":"","cards":[{"icon":"","title":"","text":"","price":""},{"icon":"","title":"","text":"","price":""},{"icon":"","title":"","text":"","price":""}],"stat1num":"","stat1lbl":"","stat2num":"","stat2lbl":"","stat3num":"","stat3lbl":"","testimonials":[{"text":"","initials":"","name":"","role":""},{"text":"","initials":"","name":"","role":""},{"text":"","initials":"","name":"","role":""},{"text":"","initials":"","name":"","role":""}]}`;
 }
 
 // ── POST handler ──────────────────────────────────────────
@@ -515,11 +554,114 @@ export async function POST(req: Request) {
       businessInfo = {};
     }
 
+    // Backup extraction: find business name directly from user messages
+    const isOptionMessage = (msg: string): boolean => {
+      const lowerMsg = msg.toLowerCase();
+      // Check for common option patterns (colors, styles, sections, etc.)
+      return (
+        lowerMsg.includes('con color') || 
+        lowerMsg.includes('llamativo') ||
+        lowerMsg.includes('oscuro') ||
+        lowerMsg.includes('claro') ||
+        lowerMsg.includes('blanco') ||
+        lowerMsg.includes('negro') ||
+        lowerMsg.includes('amarillo') ||
+        lowerMsg.includes('dorado') ||
+        lowerMsg.includes('azul') ||
+        lowerMsg.includes('fondo') ||
+        lowerMsg.includes('estilo') ||
+        lowerMsg.includes('opcion') ||
+        lowerMsg.includes('celular') ||
+        lowerMsg.includes('whatsapp') ||
+        lowerMsg.includes('número') ||
+        lowerMsg.includes('teléfono') ||
+        // Common words that indicate it's not a business name
+        lowerMsg.includes('gracias') ||
+        lowerMsg.includes('sí') ||
+        lowerMsg.includes('si ') ||
+        lowerMsg.includes('tengo') && lowerMsg.length < 30 ||
+        lowerMsg.includes('tengo un') ||
+        lowerMsg.includes('vendo') && !msg.includes(' ')
+      );
+    };
+
+    const extractNameFromMessages = (): string | null => {
+      const userMessages = (messages || [])
+        .filter((m: { role?: string }) => m.role === 'user')
+        .map((m: { content?: string }) => m.content || '');
+      
+      // Go through messages in reverse order and find first valid business name
+      for (const msg of userMessages.reverse()) {
+        const trimmed = msg.trim();
+        const words = trimmed.split(/\s+/);
+        
+        // Skip if too short, too long, or looks like an option
+        if (words.length < 2 || words.length > 8) continue;
+        if (isOptionMessage(trimmed)) continue;
+        
+        // Skip if it contains emojis (it's an option)
+        const hasEmoji = msg.includes('📷') || msg.includes('🎨') || msg.includes('💻') || 
+                        msg.includes('🍽️') || msg.includes('🍗') || msg.includes('🥩') ||
+                        msg.includes('🌽') || msg.includes('🐾') || msg.includes('👗') ||
+                        msg.includes('👟') || msg.includes('💅') || msg.includes('🎂') ||
+                        msg.includes('💪') || msg.includes('🔨') || msg.includes('💊') ||
+                        msg.includes('🏢') || msg.includes('✨') || msg.includes('🖤') ||
+                        msg.includes('💛') || msg.includes('🥇') || msg.includes('🔵') ||
+                        msg.includes('👔') || msg.includes('😊') || msg.includes('🔥') ||
+                        msg.includes('🌙') || msg.includes('☀️') || msg.includes('⚡') ||
+                        msg.includes('🌿') || msg.includes('💥') || msg.includes('📝') ||
+                        msg.includes('📞') || msg.includes('🎯') || msg.includes('📸');
+        if (hasEmoji) continue;
+        
+        // Skip if it matches common option phrases
+        const lowerTrim = trimmed.toLowerCase();
+        if (lowerTrim.startsWith('fondo') || 
+            lowerTrim.startsWith('estilo') ||
+            lowerTrim.includes('opciones') ||
+            lowerTrim.includes('prefer')) continue;
+        
+        // This looks like a business name
+        return trimmed;
+      }
+      return null;
+    };
+
+    if (!businessInfo.name || businessInfo.name.length < 3) {
+      const extractedName = extractNameFromMessages();
+      if (extractedName) {
+        businessInfo.name = extractedName;
+      }
+    }
+
+    // Also ensure sector is extracted if missing
+    if (!businessInfo.sector && messages) {
+      const allContent = (messages as { content?: string }[])
+        .map(m => m.content || '')
+        .join(' ')
+        .toLowerCase();
+      
+      if (allContent.includes('tecnología') || allContent.includes('reparación')) businessInfo.sector = 'tecnologia';
+      else if (allContent.includes('alitas') || allContent.includes('pollo')) businessInfo.sector = 'alitas_pollo';
+      else if (allContent.includes('ropa') || allContent.includes('moda')) businessInfo.sector = 'ropa_moda';
+      else if (allContent.includes('zapato') || allContent.includes('calzado')) businessInfo.sector = 'zapatos';
+      else if (allContent.includes('restaurante')) businessInfo.sector = 'restaurante';
+      else if (allContent.includes('belleza') || allContent.includes('spa')) businessInfo.sector = 'belleza_spa';
+    }
+
+    // Debug: verify businessInfo fields
+    console.log('BusinessInfo received:', JSON.stringify({
+      name: businessInfo.name,
+      industry: businessInfo.industry,
+      product: businessInfo.product,
+      sector: (businessInfo as { sector?: string }).sector,
+      whatsapp: businessInfo.whatsapp,
+    }));
+
     // 2. Generate JSON data
     let rawText: string;
     try {
       rawText = await callGenerateAI([
-        { role: 'system', content: 'Eres un generador JSON para landing pages. Solo JSON puro, sin markdown.' },
+        { role: 'system', content: 'IMPORTANTE: Responde SOLO con JSON válido. No escribas texto antes ni después. Solo el objeto JSON.' },
         { role: 'user',   content: buildPrompt(businessInfo, images.length > 0) },
       ]);
     } catch (err: unknown) {
@@ -531,18 +673,123 @@ export async function POST(req: Request) {
       );
     }
 
-    // 3. Parse JSON
-    const clean = rawText.replace(/```json/gi, '').replace(/```/g, '').trim();
+    // 3. Parse JSON (with recovery for truncated responses)
+    const cleanRaw = rawText.replace(/```json/gi, '').replace(/```/g, '').trim();
     let parsedData: LandingPageData;
+    let parseSuccess = false;
+    let clean = cleanRaw;
+    
+    // Try full parse first
     try {
       parsedData = JSON.parse(clean) as LandingPageData;
+      parseSuccess = true;
     } catch {
-      console.error('JSON parse error. Raw:', clean.slice(0, 200));
+      // Try recovery: find last complete "}" and try parsing up to there
+      const lastValidIndex = clean.lastIndexOf('}');
+      if (lastValidIndex > clean.length / 2) {
+        clean = clean.substring(0, lastValidIndex + 1);
+        console.log('Attempting JSON recovery, truncated length:', clean.length);
+        try {
+          parsedData = JSON.parse(clean) as LandingPageData;
+          parseSuccess = true;
+        } catch {
+          parsedData = {} as LandingPageData;
+        }
+      } else {
+        parsedData = {} as LandingPageData;
+      }
+    }
+    
+    if (!parseSuccess || Object.keys(parsedData).length === 0) {
+      console.error('JSON parse error. Raw:', clean.slice(0, 300));
       return NextResponse.json(
-        { success: false, error: 'Error interno de formato. Intenta de nuevo.', code: 'parse_error' },
+        { success: false, error: 'Error de formato. Intenta de nuevo.', code: 'parse_error' },
         { status: 500 }
       );
     }
+
+    // Phase 1: Get sector from businessInfo or detect from messages
+    const industry = (businessInfo.industry || '').toLowerCase();
+    const product = (businessInfo.product || '').toLowerCase();
+    
+    // Use sector directly from businessInfo if available
+    let sectorId = (businessInfo as { sector?: string }).sector || '';
+    
+    // If sector not in businessInfo, try to detect from industry/product
+    if (!sectorId) {
+      if (industry.includes('comida') || industry.includes('alita') || industry.includes('pollo') || product.includes('alita')) sectorId = 'alitas_pollo';
+      else if (industry.includes('restaurante') || industry.includes('comida preparada')) sectorId = 'restaurante';
+      else if (industry.includes('carnicería') || industry.includes('carnes')) sectorId = 'venta_carnes';
+      else if (industry.includes('agrícola') || industry.includes('campo')) sectorId = 'agricola';
+      else if (industry.includes('mascota') || industry.includes('veterinaria') || industry.includes('pet')) sectorId = 'mascotas';
+      else if (industry.includes('ropa') || industry.includes('moda') || industry.includes('boutique')) sectorId = 'ropa_moda';
+      else if (industry.includes('zapato') || industry.includes('calzado') || industry.includes('nike') || industry.includes('tenis')) sectorId = 'zapatos';
+      else if (industry.includes('belleza') || industry.includes('spa') || industry.includes('salón')) sectorId = 'belleza_spa';
+      else if (industry.includes('tech') || industry.includes('tecnología') || industry.includes('comput') || industry.includes('reparación')) sectorId = 'tecnologia';
+      else if (industry.includes('panader') || industry.includes('pastel') || industry.includes('reposter')) sectorId = 'panaderia_pasteleria';
+      else if (industry.includes('gimnas') || industry.includes('fitness') || industry.includes('gym')) sectorId = 'gym_fitness';
+      else if (industry.includes('ferreter')) sectorId = 'ferreteria';
+      else if (industry.includes('farmacia')) sectorId = 'farmacia';
+      else sectorId = 'otro';
+    }
+    
+    // Backup: ONLY scan user messages for sector keywords (scanning AI messages causes false positives like 'tecnología')
+    const userMessagesContent = (messages || [])
+      .filter((m: { role?: string }) => m.role === 'user')
+      .map((m: { content?: string }) => m.content || '')
+      .join(' ')
+      .toLowerCase();
+      
+    if (!sectorId || sectorId === 'otro') {
+      if (userMessagesContent.includes('tecnología') || userMessagesContent.includes('reparación') || userMessagesContent.includes('celular')) sectorId = 'tecnologia';
+      else if (userMessagesContent.includes('alitas') || userMessagesContent.includes('pollo')) sectorId = 'alitas_pollo';
+      else if (userMessagesContent.includes('ropa') || userMessagesContent.includes('moda') || userMessagesContent.includes('boutique')) sectorId = 'ropa_moda';
+      else if (userMessagesContent.includes('zapato') || userMessagesContent.includes('calzado') || userMessagesContent.includes('tenis')) sectorId = 'zapatos';
+      else if (userMessagesContent.includes('restaurante') || userMessagesContent.includes('comida')) sectorId = 'restaurante';
+      else if (userMessagesContent.includes('belleza') || userMessagesContent.includes('spa') || userMessagesContent.includes('salón')) sectorId = 'belleza_spa';
+      else if (userMessagesContent.includes('farmacia') || userMessagesContent.includes('salud') || userMessagesContent.includes('medicamento')) sectorId = 'farmacia';
+    }
+    
+    const sectorHero = getSectorHero(sectorId);
+
+    // Phase 2: Apply sector-based hero copy with user personalization
+    const extBusinessInfo = businessInfo as BusinessInfo & { differentiator?: string; cta?: string };
+    parsedData.heroLine1 = sectorHero.line1;
+    parsedData.heroLine2 = sectorHero.line2;
+    parsedData.heroLine3 = sectorHero.line3;
+    // Use user's differentiator as hero subtitle when meaningful (>10 chars)
+    parsedData.heroSubtitle = (extBusinessInfo.differentiator && extBusinessInfo.differentiator.length > 10)
+      ? extBusinessInfo.differentiator
+      : sectorHero.subtitle;
+    // Map CTA to contact preference
+    const ctaLabelMap: Record<string, string> = {
+      whatsapp:          'Escríbenos al WhatsApp',
+      formulario:        'Contáctanos',
+      telefono:          'Llámanos ahora',
+      whatsapp_telefono: 'Contáctanos ahora',
+    };
+    parsedData.ctaPrimary  = ctaLabelMap[extBusinessInfo.cta || ''] || sectorHero.ctaPrimary;
+    parsedData.productsTag   = sectorHero.productsTag;
+    parsedData.productsTitle = sectorHero.productsTitle;
+    parsedData.aboutTag      = sectorHero.aboutTag;
+
+    // Phase 3: Fill other defaults and force User's Name
+    const isEmpty = (val: string | undefined) => !val || 
+      (typeof val === 'string' && (val.includes('{{') || val === 'undefined' || val === 'null' || val.trim() === ''));
+
+    // If we have a genuine business name, force it on top of AI's hallucinations
+    if (businessInfo.name && businessInfo.name.length > 2 && businessInfo.name.toLowerCase() !== 'sin nombre') {
+      const parts = businessInfo.name.split(' ');
+      parsedData.logoP1 = parts[0];
+      parsedData.logoP2 = parts.slice(1).join(' ');
+      parsedData.name = businessInfo.name;
+    } else {
+      if (isEmpty(parsedData.logoP1)) parsedData.logoP1 = 'Mi';
+      if (isEmpty(parsedData.logoP2)) parsedData.logoP2 = 'Negocio';
+      if (isEmpty(parsedData.name)) parsedData.name = 'Mi Negocio';
+    }
+    
+    if (isEmpty(parsedData.whatsapp)) parsedData.whatsapp = businessInfo.whatsapp || '0000000000';
 
     parsedData = tightenCopy(parsedData);
     if (typeof logo === 'string' && logo.trim().length > 0) {
@@ -570,7 +817,7 @@ export async function POST(req: Request) {
     }
 
     // 6. Fill and return
-    const html = fillTemplate(template, parsedData, images);
+    const html = fillTemplate(template, parsedData, businessInfo, images);
     return NextResponse.json({ html: html.trim(), success: true, templateUsed: styleToUse });
 
   } catch (err: unknown) {

@@ -5,14 +5,32 @@ import { WhatsAppIcon } from './WhatsAppIcon';
 
 interface DownloadButtonProps {
   html: string;
+  businessName?: string;
   uploadedUrls?: string[];
   onCleaned?: () => void;
 }
 
 const WS_NUMBER = "5930939667369";
 
-export default function DownloadButton({ html, uploadedUrls = [], onCleaned }: DownloadButtonProps) {
+function generateFilename(businessName: string): string {
+  if (!businessName) return 'mi-pagina-web.html';
+  
+  const normalized = businessName
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9\s-]/g, '')
+    .trim()
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-')
+    .substring(0, 30);
+  
+  return `web-${normalized}.html`;
+}
+
+export default function DownloadButton({ html, businessName, uploadedUrls = [], onCleaned }: DownloadButtonProps) {
   const formRef = useRef<HTMLFormElement>(null);
+  const filename = generateFilename(businessName || '');
 
   const handleDownload = async () => {
     if (!html || !formRef.current) return;
@@ -45,6 +63,7 @@ export default function DownloadButton({ html, uploadedUrls = [], onCleaned }: D
     <div className="flex items-center gap-3">
       <form ref={formRef} method="POST" action="/api/download" style={{ display: 'none' }}>
         <textarea name="html" readOnly value={html} onChange={() => {}} />
+        <input type="hidden" name="filename" value={filename} />
       </form>
 
       <button 

@@ -3,21 +3,21 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="{{META_DESCRIPTION}}">
-  <title>{{BUSINESS_NAME}} — {{BUSINESS_TAGLINE}}</title>
+  <meta name="description" content="">
+  <title>Productos de calidad — </title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family={{DISPLAY_FONT}}:wght@700;800;900&family={{BODY_FONT}}:wght@300;400;500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800;900&family=DM Sans:wght@300;400;500&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg:      {{BG_COLOR}};
-      --accent:  {{ACCENT_COLOR}};
-      --accent2: {{ACCENT2_COLOR}};
-      --text:    {{TEXT_COLOR}};
-      --muted:   {{MUTED_COLOR}};
-      --btn-text:{{BTN_TEXT_COLOR}};
-      --font-d:  '{{DISPLAY_FONT}}', serif;
-      --font-b:  '{{BODY_FONT}}', sans-serif;
+      --bg:      #080808;
+      --accent:  #FF4D00;
+      --accent2: #FF8C42;
+      --text:    #FFFFFF;
+      --muted:   rgba(255,255,255,0.5);
+      --btn-text:#FFFFFF;
+      --font-d:  'Syne', serif;
+      --font-b:  'DM Sans', sans-serif;
       --ease:    cubic-bezier(0.4,0,0.2,1);
       --glass:   rgba(255,255,255,0.07);
       --glass-border: rgba(255,255,255,0.15);
@@ -223,42 +223,110 @@
       .footer-grid { grid-template-columns:1fr; gap:36px; }
       .footer-bottom { flex-direction:column; gap:14px; text-align:center; }
     }
+  
+    /* Auto balance hero & headlines */
+    .nav-logo {
+      display:flex;
+      align-items:center;
+      gap:12px;
+    }
+    .nav-logo-img-wrap {
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      max-height:52px;
+      max-width:180px;
+    }
+    .nav-logo-img-wrap img {
+      max-height:52px;
+      max-width:180px;
+      width:auto;
+      object-fit:contain;
+    }
+    .hero-title,
+    .s-title,
+    .about-title,
+    .cta-title {
+      text-wrap:balance;
+      word-break:break-word;
+    }
+    .hero-title {
+      max-width:min(900px, 92vw);
+      margin-inline:auto;
+    }
+    .hero-sub,
+    .s-sub,
+    .about-text,
+    .cta-sub {
+      max-width:min(640px, 100%);
+    }
+    .card-title {
+      text-wrap:balance;
+      word-break:break-word;
+    }
+    @supports (-webkit-line-clamp: 3) {
+      .hero-title,
+      .s-title,
+      .about-title,
+      .cta-title {
+        display:-webkit-box;
+        -webkit-box-orient:vertical;
+        -webkit-line-clamp:3;
+        overflow:hidden;
+      }
+      .hero-sub,
+      .s-sub,
+      .about-text,
+      .cta-sub {
+        display:-webkit-box;
+        -webkit-box-orient:vertical;
+        -webkit-line-clamp:3;
+        overflow:hidden;
+      }
+      .card-text {
+        display:-webkit-box;
+        -webkit-box-orient:vertical;
+        -webkit-line-clamp:4;
+        overflow:hidden;
+      }
+    }
+
   </style>
 </head>
 <body>
   <nav class="nav" id="nav">
-    <a href="#" class="nav-logo">{{LOGO_IMAGE}}{{LOGO_P1}}<span>{{LOGO_P2}}</span></a>
+    <a href="#" class="nav-logo">Productos<span>de calidad</span></a>
     <ul class="nav-links">
-      <li><a href="#productos">{{NAV_1}}</a></li>
-      <li><a href="#nosotros">{{NAV_2}}</a></li>
-      <li><a href="#galeria">{{NAV_3}}</a></li>
+      <li><a href="#productos"></a></li>
+      <li><a href="#nosotros"></a></li>
+      <li><a href="#galeria"></a></li>
       <li><a href="#contacto">Contacto</a></li>
     </ul>
-    <button class="nav-cta" onclick="window.open('https://wa.me/{{WHATSAPP_NUMBER}}','_blank')">{{NAV_CTA}}</button>
+    <button class="nav-cta" onclick="window.open('https://wa.me/0000000000','_blank')">Contactar</button>
   </nav>
 
   <section class="hero">
-    <span class="hero-eyebrow">{{HERO_EYEBROW}}</span>
-    <h1 class="hero-title">{{HERO_LINE_1}}<br><span class="hl">{{HERO_LINE_2}}</span><br><span class="dim">{{HERO_LINE_3}}</span></h1>
-    <p class="hero-sub">{{HERO_SUBTITLE}}</p>
+    <span class="hero-eyebrow"></span>
+    <h1 class="hero-title">Tu tecnología<br><span class="hl">en buenas manos</span><br><span class="dim">garantía incluida</span></h1>
+    <p class="hero-sub">Reparación rápida confiable equipos</p>
     <div class="hero-btns">
-      <a href="https://wa.me/{{WHATSAPP_NUMBER}}" class="btn-main" target="_blank">{{CTA_PRIMARY}} →</a>
-      <a href="#productos" class="btn-ghost">{{CTA_SECONDARY}}</a>
+      <a href="https://wa.me/0000000000" class="btn-main" target="_blank">Solicitar servicio →</a>
+      <a href="#productos" class="btn-ghost">Ver más</a>
     </div>
     <div class="hero-stats">
-      <div class="stat"><span class="stat-n">{{STAT_1_NUM}}</span><span class="stat-l">{{STAT_1_LBL}}</span></div>
+      <div class="stat"><span class="stat-n">5+</span><span class="stat-l">Años de experiencia</span></div>
       <div class="stat-sep"></div>
-      <div class="stat"><span class="stat-n">{{STAT_2_NUM}}</span><span class="stat-l">{{STAT_2_LBL}}</span></div>
+      <div class="stat"><span class="stat-n">100%</span><span class="stat-l">Satisfacción del cliente</span></div>
       <div class="stat-sep"></div>
-      <div class="stat"><span class="stat-n">{{STAT_3_NUM}}</span><span class="stat-l">{{STAT_3_LBL}}</span></div>
+      <div class="stat"><span class="stat-n">24h</span><span class="stat-l">Tiempo de respuesta</span></div>
     </div>
   </section>
 
   <section class="carousel-section" id="galeria">
     <div class="carousel-inner">
       <div class="carousel-header">
-        <span class="s-tag rv">{{CAROUSEL_TAG}}</span>
-        <h2 class="s-title rv">{{CAROUSEL_TITLE}}</h2>
+        <span class="s-tag rv"></span>
+        <h2 class="s-title rv"></h2>
       </div>
       <div class="carousel-track-wrap">
         <div class="carousel-track" id="cTrack">
@@ -278,25 +346,25 @@
   </section>
 
   <section class="section" id="productos">
-    <span class="s-tag rv">{{PRODUCTS_TAG}}</span>
-    <h2 class="s-title rv">{{PRODUCTS_TITLE}}</h2>
-    <p class="s-sub rv">{{PRODUCTS_SUBTITLE}}</p>
+    <span class="s-tag rv">Nuestros servicios</span>
+    <h2 class="s-title rv">Lo que reparamos</h2>
+    <p class="s-sub rv"></p>
     <div class="cards">
-      <div class="card rv d1"><div class="card-icon">{{CARD_1_ICON}}</div><div class="card-title">{{CARD_1_TITLE}}</div><p class="card-text">{{CARD_1_TEXT}}</p></div>
-      <div class="card rv d2"><div class="card-icon">{{CARD_2_ICON}}</div><div class="card-title">{{CARD_2_TITLE}}</div><p class="card-text">{{CARD_2_TEXT}}</p></div>
-      <div class="card rv d3"><div class="card-icon">{{CARD_3_ICON}}</div><div class="card-title">{{CARD_3_TITLE}}</div><p class="card-text">{{CARD_3_TEXT}}</p></div>
+      <div class="card rv d1"><div class="card-icon">📦</div><div class="card-title">Suministros Industriales</div><p class="card-text">Ofrecemos amplia variedad suministros industriales alta calidad satisfacer necesidades nuestros clientes.</p></div>
+      <div class="card rv d2"><div class="card-icon">🛠️</div><div class="card-title">Servicios de Mantenimiento</div><p class="card-text">Expertos ofrecen servicios mantenimiento reparación garantizar funcionamiento óptimo sus equipos y máquinas.</p></div>
+      <div class="card rv d3"><div class="card-icon">💡</div><div class="card-title">Asesoramiento y Consultoría</div><p class="card-text">Equipo expertos ofrece asesoramiento consultoría ayudar a clientes a tomar decisiones informadas mejorar negocio.</p></div>
     </div>
   </section>
 
   <section class="section" id="nosotros">
     <div class="about-grid">
       <div>
-        <span class="about-badge rv">{{ABOUT_TAG}}</span>
-        <h2 class="about-title rv">{{ABOUT_TITLE}}</h2>
-        <p class="about-text rv">{{ABOUT_TEXT}}</p>
-        <a href="https://wa.me/{{WHATSAPP_NUMBER}}" class="btn-main rv" target="_blank">{{ABOUT_CTA}} →</a>
+        <span class="about-badge rv">Nuestro taller</span>
+        <h2 class="about-title rv"></h2>
+        <p class="about-text rv">Productos calidad, nos esforzamos ofrecer soluciones innovadoras eficientes industria general. enfoque calidad la satisfacción del cliente nos permite diferenciarnos en el mercado.</p>
+        <a href="https://wa.me/0000000000" class="btn-main rv" target="_blank">Contáctanos →</a>
       </div>
-      <div class="about-img rv"><div class="about-deco">{{BUSINESS_INITIALS}}</div></div>
+      <div class="about-img rv"><div class="about-deco">PR</div></div>
     </div>
   </section>
 
@@ -315,10 +383,10 @@
 
   <div class="cta-wrap" id="contacto">
     <div class="cta-box">
-      <h2 class="cta-title">{{CTA_TITLE}}</h2>
-      <p class="cta-sub">{{CTA_SUBTITLE}}</p>
+      <h2 class="cta-title"></h2>
+      <p class="cta-sub"></p>
       <div class="cta-btns">
-        <a href="https://wa.me/{{WHATSAPP_NUMBER}}" class="btn-accent" target="_blank">💬 Escribir por WhatsApp</a>
+        <a href="https://wa.me/0000000000" class="btn-accent" target="_blank">💬 Escribir por WhatsApp</a>
         <a href="#nosotros" class="btn-glass">Conocer más</a>
       </div>
     </div>
@@ -326,17 +394,17 @@
 
   <footer class="footer">
     <div class="footer-grid">
-      <div><div class="footer-brand">{{FOOTER_LOGO_P1}}<span>{{FOOTER_LOGO_P2}}</span></div><p class="footer-desc">{{FOOTER_DESC}}</p></div>
-      <div class="footer-col"><h4>Navegación</h4><ul class="footer-links"><li><a href="#">Inicio</a></li><li><a href="#productos">{{NAV_1}}</a></li><li><a href="#nosotros">{{NAV_2}}</a></li><li><a href="#contacto">Contacto</a></li></ul></div>
-      <div class="footer-col"><h4>Contacto</h4><ul class="footer-links"><li><a href="https://wa.me/{{WHATSAPP_NUMBER}}" target="_blank">WhatsApp</a></li></ul></div>
+      <div><div class="footer-brand"><span></span></div><p class="footer-desc"></p></div>
+      <div class="footer-col"><h4>Navegación</h4><ul class="footer-links"><li><a href="#">Inicio</a></li><li><a href="#productos"></a></li><li><a href="#nosotros"></a></li><li><a href="#contacto">Contacto</a></li></ul></div>
+      <div class="footer-col"><h4>Contacto</h4><ul class="footer-links"><li><a href="https://wa.me/0000000000" target="_blank">WhatsApp</a></li></ul></div>
     </div>
     <div class="footer-bottom">
-      <span class="footer-copy">© 2025 {{BUSINESS_NAME}}. Todos los derechos reservados.</span>
+      <span class="footer-copy">© 2025 Productos de calidad. Todos los derechos reservados.</span>
       <span class="footer-badge">Hecho con MiNegocioDigital ✦</span>
     </div>
   </footer>
 
-  <a class="wa-float" href="https://wa.me/{{WHATSAPP_NUMBER}}" target="_blank" rel="noopener" aria-label="WhatsApp">
+  <a class="wa-float" href="https://wa.me/0000000000" target="_blank" rel="noopener" aria-label="WhatsApp">
     <svg viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.126.556 4.123 1.526 5.855L.057 23.882l6.186-1.438A11.934 11.934 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.885 0-3.65-.518-5.16-1.418l-.36-.214-3.733.868.939-3.62-.236-.374A9.96 9.96 0 012 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/></svg>
   </a>
 

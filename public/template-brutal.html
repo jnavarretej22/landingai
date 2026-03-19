@@ -22,10 +22,11 @@
       --ease:    cubic-bezier(0.4,0,0.2,1);
       --border:  3px solid var(--text);
     }
-    *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+    *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; min-width:0; }
     html { scroll-behavior:smooth; }
     body { font-family:var(--font-b); background:var(--bg); color:var(--text); overflow-x:hidden; }
     img { display:block; max-width:100%; }
+    .hero { overflow:hidden; }
 
     /* ── NAVBAR brutal ── */
     .nav { position:fixed; top:0; left:0; width:100%; z-index:1000; padding:0 56px; height:64px; display:flex; justify-content:space-between; align-items:center; background:var(--bg); border-bottom:var(--border); transition:none; }
@@ -43,7 +44,7 @@
     .hero-main { display:flex; flex-direction:column; justify-content:center; padding:80px 56px 60px; border-bottom:var(--border); position:relative; }
     .hero-eyebrow { font-size:12px; font-weight:800; letter-spacing:4px; text-transform:uppercase; color:var(--accent); margin-bottom:24px; display:flex; align-items:center; gap:12px; }
     .hero-eyebrow::before { content:''; display:block; width:40px; height:3px; background:var(--accent); }
-    .hero-title { font-family:var(--font-d); font-size:clamp(64px,11vw,140px); font-weight:900; line-height:.88; letter-spacing:-5px; text-transform:uppercase; margin-bottom:48px; }
+    .hero-title { font-family:var(--font-d); font-size:clamp(32px, 4.5vw, 64px); font-weight:900; line-height:1.1; letter-spacing:-2px; text-transform:uppercase; margin-bottom:28px; word-wrap:break-word; overflow-wrap:break-word; max-width:800px; width:100%; }
     .hero-title .hl { color:var(--accent); display:block; }
     .hero-title .dim { color:var(--muted); display:block; }
     .hero-bottom { display:grid; grid-template-columns:1fr 1fr 1fr; border-top:var(--border); }
@@ -178,7 +179,7 @@
       .nav { padding:0 20px; }
       .nav-links { display:none; }
       .hero-main { padding:60px 20px 40px; }
-      .hero-title { letter-spacing:-3px; }
+      .hero-title { font-size:clamp(28px, 7vw, 48px); letter-spacing:-1px; line-height:1.15; }
       .hero-bottom { grid-template-columns:1fr; }
       .hero-col { padding:24px 20px; border-right:none; border-top:var(--border); }
       .hero-col:last-child { justify-content:flex-start; flex-wrap:wrap; }

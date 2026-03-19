@@ -22,10 +22,11 @@
       --ease:    cubic-bezier(0.4,0,0.2,1);
       --line:    1px solid color-mix(in srgb, var(--text) 12%, transparent);
     }
-    *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+    *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; min-width:0; }
     html { scroll-behavior:smooth; }
     body { font-family:var(--font-b); background:var(--bg); color:var(--text); overflow-x:hidden; line-height:1.6; }
     img { display:block; max-width:100%; }
+    .hero { overflow:hidden; }
 
     /* ── NAVBAR editorial ── */
     .nav { position:fixed; top:0; left:0; width:100%; z-index:1000; padding:0 64px; height:60px; display:flex; justify-content:space-between; align-items:center; background:var(--bg); border-bottom:var(--line); transition:background .4s; }
@@ -44,7 +45,7 @@
     .hero-eyebrow { font-size:11px; font-weight:500; letter-spacing:3px; text-transform:uppercase; color:var(--accent); }
     .hero-issue { font-size:11px; color:var(--muted); letter-spacing:1px; text-align:right; }
     .hero-content { position:relative; z-index:1; }
-    .hero-title { font-family:var(--font-d); font-size:clamp(56px,9vw,128px); font-weight:800; font-style:italic; line-height:.9; letter-spacing:-4px; margin-bottom:48px; opacity:0; animation:fadeUp .8s var(--ease) .1s forwards; }
+    .hero-title { font-family:var(--font-d); font-size:clamp(32px, 4.5vw, 64px); font-weight:800; font-style:italic; line-height:1.1; letter-spacing:-2px; margin-bottom:28px; opacity:0; animation:fadeUp .8s var(--ease) .1s forwards; word-wrap:break-word; overflow-wrap:break-word; max-width:800px; width:100%; }
     .hero-title .hl { color:var(--accent); font-style:normal; }
     .hero-title .dim { color:var(--muted); }
     .hero-meta { display:flex; align-items:flex-end; justify-content:space-between; gap:48px; opacity:0; animation:fadeUp .8s var(--ease) .3s forwards; }
@@ -176,6 +177,7 @@
       .nav { padding:0 20px; }
       .nav-links { display:none; }
       .hero { padding:60px 20px 60px; }
+      .hero-title { font-size:clamp(28px, 7vw, 48px); letter-spacing:-1px; line-height:1.15; }
       .hero-meta { flex-direction:column; align-items:flex-start; }
       .hero-right { align-items:flex-start; }
       .hero-stats { gap:24px; }
